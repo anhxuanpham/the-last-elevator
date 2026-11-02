@@ -123,6 +123,7 @@
     }
   }
   var state=null,tab='registry',muted=readStorage(SOUND_KEY)==='off',audio=window.ElevatorAudio,endingShown=false,toastTimer=null;
+  audio.onStatusChange=updateSoundControls;
   audio.setMuted(muted);
   var overlay=$('#overlay'),overlayCard=$('#overlay-card');
   var fresh=function(){return {i:0,score:0,trust:2,breach:0,evidence:0,correct:0,wrong:0,history:[],found:[],opened:[],started:Date.now(),endings:[]}};
@@ -163,7 +164,9 @@
     var wrap=document.createElement('div');wrap.className='cta-row';
     items.forEach(function(item){wrap.appendChild(button(item[0],item[1],item[2]))});
     var toggle=button('',toggleSound,true);toggle.dataset.soundToggle='';wrap.appendChild(toggle);
-    overlayCard.appendChild(wrap);updateSoundControls();wrap.querySelector('button').focus({preventScroll:true});
+    var preview=document.createElement('a');preview.href='./assets/elevator-theme.mp3';preview.target='_blank';preview.rel='noopener';preview.className='secondary-cta';preview.textContent='NGHE THỬ NHẠC';wrap.appendChild(preview);
+    var status=document.createElement('p');status.className='audio-status';status.style.fontSize='12px';status.dataset.audioStatus='';status.setAttribute('role','status');
+    overlayCard.appendChild(wrap);overlayCard.appendChild(status);updateSoundControls();wrap.querySelector('button').focus({preventScroll:true});
   }
   function activateAudio(){if(!muted&&!endingShown)audio.start()}
   function sound(type){if(!muted)audio.play(type)}
@@ -173,6 +176,8 @@
       control.textContent=control.id==='sound-toggle'?(muted?'♪̸':'♫'):label.toUpperCase();
       control.title=label;control.setAttribute('aria-label',label);control.setAttribute('aria-pressed',muted?'false':'true');
     });
+    var labels={ready:'Nhạc nền: chờ bạn bấm bắt đầu.',loading:'Nhạc nền: đang tải…',playing:'Nhạc nền: đang phát.',muted:'Âm thanh đang tắt.',paused:'Nhạc nền: tạm dừng. Bấm bật âm thanh để tiếp tục.',stopped:'Nhạc nền đã dừng ở kết thúc.',blocked:'Trình duyệt chưa cho phép phát nhạc. Bấm NGHE THỬ NHẠC hoặc cho phép âm thanh cho trang này.',failed:'Không tải/phát được nhạc. Bấm NGHE THỬ NHẠC để kiểm tra.'};
+    $$('[data-audio-status]').forEach(function(el){el.textContent=labels[audio.status()]||labels.ready});
   }
   function toggleSound(){
     muted=!muted;writeStorage(SOUND_KEY,muted?'off':'on');audio.setMuted(muted);
@@ -391,7 +396,7 @@
   document.addEventListener('keydown',function(ev){
     if(overlay.classList.contains('visible')){
       if(ev.key==='Tab'){
-        var buttons=Array.prototype.slice.call(overlayCard.querySelectorAll('button:not(:disabled)'));
+        var buttons=Array.prototype.slice.call(overlayCard.querySelectorAll('button:not(:disabled),a[href]'));
         var first=buttons[0],last=buttons[buttons.length-1];
         if(!first){ev.preventDefault();overlay.focus()}
         else if(!overlayCard.contains(document.activeElement)||(ev.shiftKey&&document.activeElement===first)||(!ev.shiftKey&&document.activeElement===last)){

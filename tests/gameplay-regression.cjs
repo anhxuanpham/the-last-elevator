@@ -14,13 +14,13 @@ let server, browser;
 
 before(async () => {
   server = http.createServer(async (req, res) => {
-    const files = { '/': 'index.html', '/index.html': 'index.html', '/game.js': 'game.js', '/audio.js': 'audio.js', '/styles.css': 'styles.css', '/assets/elevator-lobby.png': 'assets/elevator-lobby.png' };
+    const files = { '/': 'index.html', '/index.html': 'index.html', '/game.js': 'game.js', '/audio.js': 'audio.js', '/styles.css': 'styles.css', '/assets/elevator-lobby.png': 'assets/elevator-lobby.png', '/assets/elevator-theme.mp3': 'assets/elevator-theme.mp3' };
     const file = files[req.url];
     if (!file) { res.writeHead(404).end(); return; }
     try {
       const content = await fs.readFile(path.join(gameRoot, file));
-      const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png' };
-      res.writeHead(200, { 'Content-Type': mime[path.extname(file)] }).end(content);
+      const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png', '.mp3': 'audio/mpeg' };
+      res.writeHead(200, { 'Content-Type': mime[path.extname(file)], 'Content-Length': content.length }).end(content);
     } catch { res.writeHead(404).end(); }
   });
   await new Promise((resolve, reject) => { server.once('error', reject); server.listen(port, '127.0.0.1', resolve); });
@@ -34,10 +34,22 @@ after(async () => {
 async function withPage(run, options = {}) {
   const context = await browser.newContext({ viewport: options.mobile ? { width: 390, height: 844 } : { width: 1440, height: 1000 }, reducedMotion: 'reduce' });
   try {
-    await context.addInitScript(({ seed, fault, audio, audioFault }) => {
+    await context.addInitScript(({ seed, fault, audio, audioFault, media, mediaFault }) => {
       for (const [key, value] of Object.entries(seed || {})) localStorage.setItem(key, JSON.stringify(value));
       if (fault === 'access') Object.defineProperty(window, 'localStorage', { get() { throw new DOMException('Storage disabled', 'SecurityError'); } });
       else if (fault) for (const method of fault === 'all' ? ['getItem', 'setItem', 'removeItem'] : [fault]) Storage.prototype[method] = function () { throw new DOMException('Storage disabled', 'SecurityError'); };
+      if (media) {
+        const probe = window.__mediaProbe = { playAttempts: 0, rejections: [] };
+        window.addEventListener('unhandledrejection', event => probe.rejections.push(String(event.reason)));
+        if (mediaFault === 'blocked') {
+          const play = HTMLMediaElement.prototype.play;
+          HTMLMediaElement.prototype.play = function () {
+            if (this.id !== 'background-music') return play.call(this);
+            probe.playAttempts++;
+            return Promise.reject(new DOMException('Playback denied for regression test', 'NotAllowedError'));
+          };
+        }
+      }
       if (audio) {
         const probe = window.__audioProbe = { contexts: [], resumeAttempts: 0, rejections: [] };
         window.addEventListener('unhandledrejection', event => probe.rejections.push(String(event.reason)));
@@ -74,10 +86,11 @@ async function withPage(run, options = {}) {
         window.AudioContext = ObservedContext;
         window.webkitAudioContext = ObservedContext;
       }
-    }, { seed: options.seed, fault: options.fault, audio: options.audio, audioFault: options.audioFault });
+    }, { seed: options.seed, fault: options.fault, audio: options.audio, audioFault: options.audioFault, media: options.media, mediaFault: options.mediaFault });
     const page = await context.newPage();
     const errors = [];
     page.on('pageerror', err => errors.push(err.message));
+    if (options.mediaFault === 'network') await page.route('**/assets/elevator-theme.mp3', route => route.abort('failed'));
     await page.goto(url, { waitUntil: 'domcontentloaded' });
     await run(page);
     assert.deepEqual(errors, [], 'No uncaught browser errors');
@@ -129,6 +142,15 @@ function assertAudible(output) {
   assert.ok(output.peak > 0.0005, `Audio peak is measurable: ${JSON.stringify(output)}`);
   assert.deepEqual(output.rejections, [], 'No unhandled audio promise rejections');
 }
+const mediaState = p => p.locator('#background-music').evaluate(media => ({ paused: media.paused, currentTime: media.currentTime, duration: Number.isFinite(media.duration) ? media.duration : null, readyState: media.readyState, networkState: media.networkState, volume: media.volume, loop: media.loop, error: media.error && media.error.code }));
+async function waitForMusic(p) {
+  await p.waitForFunction(() => {
+    const music = document.getElementById('background-music');
+    return !music.paused && music.readyState >= 2 && music.currentTime > 0.1;
+  });
+  await p.waitForFunction(() => [...document.querySelectorAll('[data-audio-status]')].every(label => label.textContent.includes('đang phát')));
+}
+async function assertNoMediaRejections(p) { assert.deepEqual(await p.evaluate(() => window.__mediaProbe.rejections), [], 'No unhandled media promise rejections'); }
 const visibleOverlay = p => p.locator('#overlay').evaluate(e => e.classList.contains('visible'));
 const readSave = p => p.evaluate(key => JSON.parse(localStorage.getItem(key)), SAVE);
 const scan = (p, kind) => p.locator(`[data-inspect="${kind}"]`).click();
@@ -717,3 +739,103 @@ test('audio: rejected native resume is handled without breaking the game or leak
   assert.equal((await readSave(p)).correct, 1);
   t.diagnostic(JSON.stringify(output));
 }, { audio: true, audioFault: 'resume' }));
+
+test('music: native MP3 waits for a gesture then decodes and advances with truthful playing status', t => withPage(async p => {
+  await p.waitForTimeout(200);
+  const before = await mediaState(p);
+  assert.equal(before.paused, true);
+  assert.equal(before.currentTime, 0);
+  assert.equal(before.readyState, 0, 'preload none leaves the score unloaded before a gesture');
+  assert.doesNotMatch(await p.locator('#overlay-card [data-audio-status]').innerText(), /đang phát/);
+  await p.locator('#overlay-card .main-cta').click();
+  await waitForMusic(p);
+  const playing = await mediaState(p);
+  t.diagnostic(JSON.stringify({ playing }));
+  assert.equal(playing.error, null);
+  assert.equal(playing.loop, true);
+  assert.equal(playing.volume, 0.8);
+  assert.ok(playing.duration > 39 && playing.duration < 41, 'Native decoder reads the real forty-second score');
+  await p.waitForTimeout(550);
+  const later = await mediaState(p);
+  assert.ok(later.currentTime > playing.currentTime + 0.3, `Native media time progresses: ${JSON.stringify({ playing, later })}`);
+  await assertNoMediaRejections(p);
+  t.diagnostic(JSON.stringify({ before, playing, later }));
+}, { media: true }));
+
+test('music: mute reload unmute and ending control the real media element without restarting a finished shift', t => withPage(async p => {
+  await start(p); await waitForMusic(p);
+  await p.locator('#sound-toggle').click();
+  assert.equal((await mediaState(p)).paused, true);
+  assert.equal(await p.evaluate(() => localStorage.getItem('tle_floor13_sound')), 'off');
+  const mutedTime = (await mediaState(p)).currentTime;
+  await p.waitForTimeout(250);
+  const afterMute = await mediaState(p);
+  t.diagnostic(JSON.stringify({ mutedTime, afterMute }));
+  assert.ok(Math.abs(afterMute.currentTime - mutedTime) < 0.05, 'Mute freezes playback time');
+  await p.reload({ waitUntil: 'domcontentloaded' });
+  await start(p);
+  assert.equal((await mediaState(p)).paused, true);
+  assert.equal((await mediaState(p)).currentTime, 0);
+  await decide(p, true, false);
+  await p.locator('#overlay-card [data-sound-toggle]').click();
+  await waitForMusic(p);
+  const restored = await mediaState(p);
+  assert.equal(await p.evaluate(() => localStorage.getItem('tle_floor13_sound')), 'on');
+  await advance(p); await finale(p, false, safe, 1);
+  await p.getByRole('button', { name: 'KHÓA TẦNG 13', exact: true }).click();
+  const finished = await mediaState(p);
+  assert.equal(finished.paused, true);
+  assert.equal(finished.currentTime, 0);
+  assert.match(await p.locator('#overlay-card [data-audio-status]').innerText(), /đã dừng ở kết thúc/);
+  await p.locator('#overlay-card [data-sound-toggle]').click();
+  await p.locator('#overlay-card [data-sound-toggle]').click();
+  await p.getByRole('button', { name: 'SAO CHÉP THÀNH TÍCH', exact: true }).click();
+  await p.waitForTimeout(200);
+  assert.equal((await mediaState(p)).paused, true);
+  assert.equal((await mediaState(p)).currentTime, 0);
+  await assertNoMediaRejections(p);
+  t.diagnostic(JSON.stringify({ mutedTime, restored, finished }));
+}, { media: true }));
+
+test('music: denied media play reports blocked instead of playing and keeps gameplay usable', t => withPage(async p => {
+  await start(p);
+  await p.waitForFunction(() => [...document.querySelectorAll('[data-audio-status]')].every(label => label.textContent.includes('chưa cho phép phát nhạc')));
+  const status = await p.locator('[data-audio-status]').allTextContents();
+  assert.ok(status.every(text => !text.includes('đang phát')));
+  assert.equal((await mediaState(p)).paused, true);
+  await scan(p, 'registry'); await decide(p, true, false);
+  assert.equal((await readSave(p)).correct, 1);
+  assert.match(await p.locator('#overlay-card [data-audio-status]').innerText(), /chưa cho phép phát nhạc/);
+  assert.equal(await p.getByRole('link', { name: 'NGHE THỬ NHẠC', exact: true }).getAttribute('href'), './assets/elevator-theme.mp3');
+  assert.ok(await p.evaluate(() => window.__mediaProbe.playAttempts > 0), 'The rejected play path was exercised');
+  await assertNoMediaRejections(p);
+  t.diagnostic(JSON.stringify({ status, playAttempts: await p.evaluate(() => window.__mediaProbe.playAttempts) }));
+}, { media: true, mediaFault: 'blocked' }));
+
+test('music: real score network failure reports failed with playable fallback and a trapped preview link', t => withPage(async p => {
+  const failedRequests = [];
+  p.on('requestfailed', request => failedRequests.push({ url: request.url(), failure: request.failure() }));
+  await start(p);
+  await p.waitForTimeout(500);
+  t.diagnostic(JSON.stringify({ failedRequests, media: await mediaState(p), status: await p.locator('[data-audio-status]').allTextContents() }));
+  await p.waitForFunction(() => [...document.querySelectorAll('[data-audio-status]')].every(label => label.textContent.includes('Không tải/phát được nhạc')), null, { timeout: 5000 });
+  const failed = await mediaState(p);
+  assert.ok(failed.error, 'The native media element recorded a real failed request');
+  assert.equal(failed.paused, true);
+  await p.waitForTimeout(1600);
+  const fallback = await audioOutput(p, 300);
+  assertAudible(fallback);
+  assert.ok(fallback.minRms > 0.005, 'Procedural fallback continues when the MP3 cannot load');
+  await scan(p, 'registry'); await decide(p, true, false);
+  assert.equal((await readSave(p)).correct, 1);
+  const link = p.getByRole('link', { name: 'NGHE THỬ NHẠC', exact: true });
+  assert.equal(await link.getAttribute('href'), './assets/elevator-theme.mp3');
+  assert.equal(await link.getAttribute('target'), '_blank');
+  await link.focus(); await p.keyboard.press('Tab');
+  assert.equal(await p.evaluate(() => document.activeElement === document.querySelector('#overlay-card button')), true, 'Tab from the last preview link wraps to the first modal control');
+  await p.keyboard.press('Shift+Tab');
+  assert.equal(await link.evaluate(element => element === document.activeElement), true, 'Shift Tab wraps back to the preview link');
+  assert.match(await p.locator('#overlay-card [data-audio-status]').innerText(), /Không tải\/phát được nhạc/);
+  await assertNoMediaRejections(p);
+  t.diagnostic(JSON.stringify({ failed, fallback }));
+}, { media: true, mediaFault: 'network', audio: true }));

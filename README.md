@@ -21,9 +21,10 @@ Có thể mở trực tiếp `dist/index.html`, nhưng nên dùng HTTP server n�
 dist/
   index.html                  UI và nội dung HTML
   styles.css                  Theme, bố cục, responsive, hiệu ứng
-  audio.js                    Âm nền và hiệu ứng Web Audio sinh trực tiếp
+  audio.js                    Phát nhạc nền, ambience và hiệu ứng
   game.js                     Toàn bộ logic game và nội dung cốt truyện
   assets/elevator-lobby.png   Ảnh nền sảnh thang máy
+  assets/elevator-theme.mp3   Nhạc nền gốc của dự án
 ```
 
 ## Những gì đã có
@@ -37,7 +38,7 @@ dist/
 - Giữ lượt xác minh và kết quả vừa đọc khi tải lại trang; SIGNAL phản ánh đường truyền theo đêm, không phải đáp án an toàn.
 - Game vẫn chơi được trong phiên hiện tại khi trình duyệt chặn lưu trữ; dữ liệu lưu lỗi được bỏ qua an toàn.
 - Hỗ trợ bàn phím và giao diện responsive cho desktop/mobile.
-- Âm nền quạt/động cơ sảnh và hiệu ứng xác minh, cửa, cảnh báo, chuyển đêm, kết thúc; bật/tắt được ở thanh trên và trong modal, giữ lựa chọn qua reload.
+- Nhạc nền gốc có giai điệu, tiếng quạt/động cơ và hiệu ứng theo gameplay; bật/tắt ở thanh trên và trong modal, giữ lựa chọn qua reload. Có trạng thái phát nhạc và liên kết nghe thử MP3.
 - Hình nhân vật được tạo bằng SVG trực tiếp trong `game.js`; ảnh nền riêng trong `assets/`.
 
 ## Tùy chỉnh
@@ -45,13 +46,13 @@ dist/
 - **Nội dung nhân vật, lời thoại, 12 tình huống, các kết thúc:** sửa các hằng `people`, `cases`, `scenes`, `endings` trong `dist/game.js`.
 - **Nội dung phụ thuộc quyết định trước đó:** xem `caseQuote()`, `caseNote()`, `clueText()`, `nightBody()`, `nightSummaryText()` và `endingText()` trong `dist/game.js`.
 - **UI và phối màu:** sửa `dist/styles.css`.
-- **Âm nền và hiệu ứng:** sửa [dist/audio.js](dist/audio.js); các điểm phát âm theo gameplay nằm trong `dist/game.js`. Âm được sinh bằng Web Audio, không cần tải file âm thanh hay dịch vụ ngoài.
+- **Nhạc nền và hiệu ứng:** sửa [dist/audio.js](dist/audio.js); các điểm phát âm theo gameplay nằm trong `dist/game.js`. Nhạc MP3 được tải từ asset của game, tiếng nền/hiệu ứng sinh bằng Web Audio; không dùng dịch vụ nhạc ngoài. Script [generate-soundtrack.py](scripts/generate-soundtrack.py) tạo bản nhạc gốc; xem [cách tạo lại asset](docs/gameplay-and-testing.md#tạo-lại-nhạc-nền).
 - **Ảnh nền:** thay `dist/assets/elevator-lobby.png`, hoặc sửa đường dẫn ở `.elevator-stage` trong CSS.
 - **Nhân vật:** sửa hàm `portrait(...)` trong `dist/game.js` để thay SVG tạm bằng asset nhân vật riêng.
 
 Xem [hướng dẫn cốt truyện và continuity — có spoiler toàn bộ truyện](docs/story-guide.md) trước khi sửa nội dung.
 
-Âm thanh bắt đầu sau khi bấm bắt đầu/tiếp tục hoặc chủ động bật tiếng. Nếu đã tắt âm, dùng nút **BẬT ÂM THANH** trong modal; sau reload cần một thao tác mới để phát. Xem [quy tắc âm thanh và kiểm tra](docs/gameplay-and-testing.md#âm-thanh).
+Âm thanh bắt đầu sau khi bấm bắt đầu/tiếp tục hoặc chủ động bật tiếng. Nếu đã tắt âm, dùng nút **BẬT ÂM THANH** trong modal; sau reload cần một thao tác mới để phát. **NGHE THỬ NHẠC** mở MP3 trong trình phát riêng của browser. Trạng thái “đang phát” phản ánh media trong game, không xác nhận tiếng đã đến loa/tai nghe. Xem [quy tắc âm thanh và kiểm tra](docs/gameplay-and-testing.md#âm-thanh).
 
 ## Deploy
 

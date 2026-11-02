@@ -1,10 +1,48 @@
-/* Original procedural ambience and cues; no downloaded audio or autoplay. */
+/* Original background score, procedural ambience and cues; no autoplay. */
 (function(){
   'use strict';
   var Context=window.AudioContext||window.webkitAudioContext;
   var context=null,master=null,noiseBuffer=null,ambience=null;
   var muted=false,active=false,unlocked=false,night=1,resuming=null;
   var effects=[];
+  var music=document.getElementById('background-music'),musicState='ready',musicAttempt=0,api;
+  function notify(){if(api&&typeof api.onStatusChange==='function')api.onStatusChange()}
+  function status(){return muted?'muted':musicState}
+  function startMusic(){
+    if(!music)return;
+    music.volume=.8;
+    // Keep a real load failure visible until an explicit unmute/replay retry.
+    if(music.error){musicState='failed';notify();return}
+    if(!music.paused)return;
+    var request=++musicAttempt;
+    musicState='loading';notify();
+    try{
+      var pending=music.play();
+      if(pending)pending.then(function(){
+        if(request!==musicAttempt)return;
+        if(muted||!active||document.hidden){music.pause();return}
+        musicState='playing';notify();
+      },function(error){
+        if(request!==musicAttempt)return;
+        if(muted||!active||document.hidden)return;
+        musicState=error.name==='NotAllowedError'?'blocked':'failed';notify();
+      });
+    }catch(e){musicState='failed';notify()}
+  }
+  if(music){
+    music.addEventListener('playing',function(){
+      if(muted||!active||document.hidden){music.pause();return}
+      musicState='playing';notify();
+    });
+    music.addEventListener('waiting',function(){if(active&&!muted&&!music.error){musicState='loading';notify()}});
+    music.addEventListener('pause',function(){
+      if(!active)musicState='stopped';
+      else if(music.error)musicState='failed';
+      else if(musicState!=='blocked'&&musicState!=='failed')musicState='paused';
+      notify();
+    });
+    music.addEventListener('error',function(){musicAttempt++;music.pause();musicState='failed';notify()});
+  }
 
   function ramp(param,value,seconds){
     var now=context.currentTime;
@@ -39,6 +77,7 @@
     }catch(e){resuming=null}
   }
   function pause(){
+    musicAttempt++;if(music)music.pause();
     if(!context||context.state==='closed')return;
     try{context.suspend().catch(function(){})}catch(e){}
   }
@@ -57,21 +96,22 @@
     if(ambience)return;
     var hum=context.createOscillator(),harmonic=context.createOscillator();
     var humGain=context.createGain(),harmonicGain=context.createGain();
-    hum.type='sine';hum.frequency.value=110+(night-1)*1.5;humGain.gain.value=.065;
-    harmonic.type='sine';harmonic.frequency.value=218.5;harmonicGain.gain.value=.025;
+    hum.type='sine';hum.frequency.value=110+(night-1)*1.5;humGain.gain.value=.025;
+    harmonic.type='sine';harmonic.frequency.value=218.5;harmonicGain.gain.value=.012;
     hum.connect(humGain);humGain.connect(master);
     harmonic.connect(harmonicGain);harmonicGain.connect(master);
     var fan=context.createBufferSource(),filter=context.createBiquadFilter(),fanGain=context.createGain();
     fan.buffer=noise();fan.loop=true;filter.type='lowpass';filter.frequency.value=650+(night-1)*90;
-    fanGain.gain.value=.18;fan.connect(filter);filter.connect(fanGain);fanGain.connect(master);
+    fanGain.gain.value=.045;fan.connect(filter);filter.connect(fanGain);fanGain.connect(master);
     hum.start();harmonic.start();fan.start();
     ambience={sources:[hum,harmonic,fan],nodes:[hum,humGain,harmonic,harmonicGain,fan,filter,fanGain],hum:hum,filter:filter};
   }
   function start(){
-    if(muted||document.hidden||!ensureContext())return false;
+    if(muted||document.hidden)return false;
     active=true;unlocked=true;
-    startAmbience();ramp(master.gain,.72,.12);resume();
-    return true;
+    startMusic();
+    if(ensureContext()){startAmbience();ramp(master.gain,.72,.12);resume();return true}
+    return !!music;
   }
   function track(source,nodes){
     var item={source:source,nodes:nodes};effects.push(item);
@@ -123,6 +163,8 @@
   }
   function finish(ending){
     active=false;stopAmbience();stopEffects();
+    musicAttempt++;if(music){music.pause();music.currentTime=0;if(music.error)music.load()}
+    musicState='stopped';notify();
     if(muted||document.hidden||!ensureContext())return;
     ramp(master.gain,.72,.04);resume();
     try{
@@ -137,9 +179,12 @@
   }
   function setMuted(value){
     muted=!!value;
-    if(!context)return;
-    if(muted){master.gain.cancelScheduledValues(context.currentTime);master.gain.setValueAtTime(0,context.currentTime);stopEffects();pause()}
-    else if(active)start();
+    if(muted){
+      if(context){master.gain.cancelScheduledValues(context.currentTime);master.gain.setValueAtTime(0,context.currentTime)}
+      stopEffects();pause();
+    }
+    else if(active){if(music&&music.error){musicAttempt++;music.load()}start()}
+    notify();
   }
   function setNight(value){
     night=value;
@@ -153,5 +198,6 @@
   window.addEventListener('pageshow',function(){if(unlocked&&active&&!muted)start()});
   document.addEventListener('pointerdown',function(){if(unlocked&&active&&!muted)start()});
   document.addEventListener('keydown',function(){if(unlocked&&active&&!muted)start()});
-  window.ElevatorAudio={start:start,play:play,finish:finish,setMuted:setMuted,setNight:setNight,supported:typeof Context==='function'};
+  api={start:start,play:play,finish:finish,setMuted:setMuted,setNight:setNight,status:status,supported:typeof Context==='function'||!!music};
+  window.ElevatorAudio=api;
 })();

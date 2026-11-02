@@ -15,7 +15,17 @@
 - Game không tự phát tiếng trước tương tác. Bấm bắt đầu, tiếp tục hoặc chủ động bật âm để khởi động tiếng nền; reload chờ thao tác mới, kể cả trước đó đang bật tiếng.
 - Nút âm thanh có ở thanh trên và trong mọi modal. Lựa chọn tắt âm được lưu cùng cơ chế storage của game và giữ qua reload; bật lại trong ca trực khôi phục tiếng nền. Trình đọc màn hình nhận được nhãn bật/tắt và trạng thái hiện tại.
 - Âm nền tạm dừng khi trang bị ẩn/rời trang; khi quay lại ca đang chơi, game thử tiếp tục và có thể cần thao tác mới nếu browser chặn phát. Âm nền dừng ở ending, chỉ còn cue kết thúc. Chơi lại dùng lại audio context hiện có.
-- [audio.js](../dist/audio.js) sở hữu âm nền và hiệu ứng Web Audio sinh trực tiếp; các lời gọi theo gameplay nằm trong [game.js](../dist/game.js). Không cần tải âm thanh bên ngoài. Nếu browser không hỗ trợ Web Audio hoặc từ chối resume, gameplay vẫn dùng được.
+- [audio.js](../dist/audio.js) phát [nhạc nền gốc MP3](../dist/assets/elevator-theme.mp3) qua media element và sinh ambience/hiệu ứng bằng Web Audio; các lời gọi theo gameplay nằm trong [game.js](../dist/game.js). File nhạc được tải từ asset của game, không qua dịch vụ nhạc bên thứ ba. Lỗi phát MP3 hoặc Web Audio không chặn gameplay.
+- Trạng thái nhạc trong footer/modal phản ánh chờ tương tác, tải, phát, tạm dừng, tắt hoặc lỗi. Nếu chưa nghe, bấm **NGHE THỬ NHẠC** để mở MP3 bằng trình phát riêng của browser; trình phát này có điều khiển riêng, độc lập nút mute trong game. Kiểm tra trạng thái tắt tiếng của tab và thiết bị đầu ra đang chọn. “Đang phát” chỉ xác nhận trạng thái media, không chứng minh người chơi đã nghe tiếng.
+
+### Tạo lại nhạc nền
+
+Nhạc là bản gốc của dự án, gồm pad và motif do [generate-soundtrack.py](../scripts/generate-soundtrack.py) tổng hợp offline bằng Python chuẩn; không lấy bản thu hay sample nhạc bên ngoài. Người bảo trì có thể tạo WAV rồi encode MP3 bằng FFmpeg; người chơi không cần cài các công cụ này. Chạy từ thư mục gốc repo:
+
+```bash
+python3 scripts/generate-soundtrack.py /tmp/elevator-theme.wav
+ffmpeg -hide_banner -loglevel error -y -i /tmp/elevator-theme.wav -af loudnorm=I=-18:TP=-1.5:LRA=7 -ar 44100 -codec:a libmp3lame -b:a 128k -map_metadata -1 dist/assets/elevator-theme.mp3
+```
 
 ## Lưu trữ
 
@@ -55,3 +65,5 @@ BROWSER=webkit PLAYWRIGHT_MODULE=/tmp/tle-browser-tests/node_modules/playwright 
 Suite kiểm tra bốn ending, điểm/bằng chứng, chống thu thập trùng, scan/đọc lại nguồn qua reload, điều hướng tab không quyết định nhầm, hai nhánh chìa khóa của The Truth sau reload, modal/focus, SIGNAL, các nhánh lịch sử, storage lỗi, save cũ/save hỏng và viewport mobile. Các ca truyện còn kiểm tra nhánh từ chối Minh/Bảy/An/Linh, mốc ba đêm và nguồn điện, finale không tự cộng bằng chứng, Truth với một breach và bốn bằng chứng, cùng khả năng cuộn modal dài trên mobile. Storage lỗi được kiểm tra bằng cách làm các phương thức browser Storage ném `SecurityError`; không thay thế logic game.
 
 Các ca âm thanh đo PCM bằng `AudioContext`/`AnalyserNode` thật tại đầu ra của graph, kiểm tra âm nền liên tục, cue, mute/unmute, reload/tiếp tục, chơi lại không nhân context và fallback. Phép đo này xác nhận tín hiệu do browser tạo ra; không thay thế việc nghe thử qua loa/tai nghe hoặc xác nhận âm lượng phần cứng của người chơi.
+
+Các ca nhạc kiểm tra MP3 thật được decode và `currentTime` tăng sau tương tác; mute/reload/ending dừng đúng, lỗi play hoặc tải file có trạng thái tương ứng, và liên kết nghe thử nằm trong vòng focus của modal. Trạng thái media và PCM không phải bài nghe thử phần cứng.

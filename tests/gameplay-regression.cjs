@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const { test, before, after } = require('node:test');
-const http = require('node:http');
+const { serveGame } = require('./static-game-server.cjs');
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const { chromium, webkit } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
@@ -13,17 +13,7 @@ const evidence = [null, null, 'log', 'log', 'log', 'registry', 'camera', 'log', 
 let server, browser;
 
 before(async () => {
-  server = http.createServer(async (req, res) => {
-    const files = { '/': 'index.html', '/index.html': 'index.html', '/game.js': 'game.js', '/audio.js': 'audio.js', '/styles.css': 'styles.css', '/assets/elevator-lobby.png': 'assets/elevator-lobby.png', '/assets/elevator-theme.mp3': 'assets/elevator-theme.mp3' };
-    const file = files[req.url];
-    if (!file) { res.writeHead(404).end(); return; }
-    try {
-      const content = await fs.readFile(path.join(gameRoot, file));
-      const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png', '.mp3': 'audio/mpeg' };
-      res.writeHead(200, { 'Content-Type': mime[path.extname(file)], 'Content-Length': content.length }).end(content);
-    } catch { res.writeHead(404).end(); }
-  });
-  await new Promise((resolve, reject) => { server.once('error', reject); server.listen(port, '127.0.0.1', resolve); });
+  server = await serveGame(gameRoot, port);
   browser = await (process.env.BROWSER === 'webkit' ? webkit : chromium).launch({ headless: true });
 });
 after(async () => {
@@ -188,6 +178,15 @@ for (const [key, title, label, collect] of [
     assert.equal(s.score, collect ? 1450 : 1200);
     await p.getByRole('button', { name: label, exact: true }).click();
     assert.equal(await p.locator('#overlay-card h2').innerText(), title);
+    assert.equal(await p.locator('#overlay-card a').count(), 0, 'Ending has no preview player link');
+    const story = await p.locator('.ending-copy').innerText();
+    const consequences = {
+      truth: /giữ cả báo cáo sai lẫn bản đính chính/,
+      keeper: /bản sao dữ liệu được nhập sang máy mới/,
+      replacement: /Hệ thống lưu tiếng đó vào mục TẠP ÂM/,
+      silence: /xóa dữ liệu cũ theo lịch bàn giao/
+    };
+    assert.match(story, consequences[key], 'Each choice closes a different consequence in the new story');
     assert.equal(await readSave(p), null);
     assert.deepEqual(await p.evaluate(key => JSON.parse(localStorage.getItem(key)), BEST), { score: s.score, endings: [key] });
     await p.reload({ waitUntil: 'domcontentloaded' });
@@ -402,7 +401,7 @@ test('mobile long story modals scroll and keep finale and replay controls reacha
   }
   await checkModal();
   await p.locator('#overlay-card').evaluate(e => { e.scrollTop = 0; });
-  await p.screenshot({ path: path.join(report, `test-261102-1320-story-mobile-finale-${engine}.png`) });
+  await p.screenshot({ path: path.join(report, `story-mobile-finale-${engine}.png`) });
   const open = p.getByRole('button', { name: 'MỞ CỬA TẦNG 13', exact: true });
   await open.scrollIntoViewIfNeeded();
   await open.click();
@@ -410,7 +409,7 @@ test('mobile long story modals scroll and keep finale and replay controls reacha
   const ending = await checkModal();
   assert.ok(ending.scrollHeight > ending.clientHeight, 'Long ending uses the modal scroll area');
   await p.locator('#overlay-card').evaluate(e => { e.scrollTop = 0; });
-  await p.screenshot({ path: path.join(report, `test-261102-1320-story-mobile-truth-${engine}.png`) });
+  await p.screenshot({ path: path.join(report, `story-mobile-truth-${engine}.png`) });
   const replay = p.getByRole('button', { name: 'CHƠI LẠI →', exact: true });
   await replay.scrollIntoViewIfNeeded();
   assert.ok(await p.locator('#overlay-card').evaluate(e => e.scrollTop > 0), 'Replay is reachable by scrolling the long ending');
@@ -510,12 +509,12 @@ for (const admitted of [false, true]) {
     const decisions = safe.slice(); decisions[11] = admitted;
     await decide(p, admitted, false);
     const result = await p.locator('#overlay-card .lead').innerText();
-    assert.match(result, /(?:ký ức|nhớ mình)/);
+    assert.match(result, /(?:ký ức|nhớ mình)/i);
     assert.equal((await readSave(p)).evidence, 9, 'The last passenger does not award an unread camera record');
-    if (admitted) assert.match(result, /vết khói.*chính bạn/);
+    if (admitted) assert.match(result, /Vết bỏng.*vết sẹo trên tay/);
     else {
       assert.match(result, /khóa lối về bàn G/);
-      assert.match(result, /ký ức.*giữ riêng/);
+      assert.match(result, /ký ức.*giữ riêng/i);
       assert.doesNotMatch(result, /(?:Linh|người kia|cô ấy) (?:bước vào|vào phòng|đứng cạnh|đứng bên)/);
     }
     await p.locator('#overlay-card .main-cta').click();
@@ -532,7 +531,7 @@ for (const admitted of [false, true]) {
 test('three distinct nights, repair timing and rescue power instructions agree through the finale', () => withPage(async p => {
   await p.locator('#overlay-card .main-cta').click();
   assert.match(await p.locator('#overlay-card').innerText(), /LINH/);
-  assert.match(await p.locator('#overlay-card').innerText(), /2013/);
+  assert.doesNotMatch(await p.locator('#overlay-card').innerText(), /2013|xác nhận cabin trống|còn sống/);
   await advance(p);
   const clocks = [await p.locator('#clock').innerText()];
   await toCase(p, 2); await scan(p, 'log');
@@ -544,7 +543,7 @@ test('three distinct nights, repair timing and rescue power instructions agree t
   await p.locator('#overlay-card .main-cta').click();
   const secondNight = await p.locator('#overlay-card').innerText();
   assert.match(secondNight, /đêm mới|đêm thứ hai/i);
-  assert.match(secondNight, /đồng hồ.*01:13/);
+  assert.match(secondNight, /đồng hồ.*01:13/i);
   await advance(p);
   clocks.push(await p.locator('#clock').innerText());
   await scan(p, 'registry');
@@ -558,7 +557,7 @@ test('three distinct nights, repair timing and rescue power instructions agree t
   await p.locator('#overlay-card .main-cta').click();
   const thirdNight = await p.locator('#overlay-card').innerText();
   assert.match(thirdNight, /đêm thứ ba/i);
-  assert.match(thirdNight, /đồng hồ.*01:13/);
+  assert.match(thirdNight, /đồng hồ.*01:13/i);
   await advance(p);
   clocks.push(await p.locator('#clock').innerText());
   for (const clock of clocks) assert.match(clock, /^01:13:/, 'Each night returns to the 01:13 interval');
@@ -597,7 +596,8 @@ test('four observed clues and one contained breach still unlock Truth without Ba
   assert.equal(before.score, 960);
   await p.locator('#overlay-card .main-cta').click();
   const copy = await p.locator('#overlay-card').innerText();
-  assert.match(copy, /BẢY · AN · VÂN · LINH/);
+  assert.match(copy, /BẢY · AN · VÂN — CHƯA TRỞ VỀ/);
+  assert.match(copy, /NGƯỜI XÁC NHẬN: LINH — CÒN SỐNG/);
   assert.match(copy, /cần mở cửa cứu hộ/);
   assert.deepEqual(await readSave(p), before, 'Mandatory finale reveals its own roster and lever without awarding unread evidence');
   await p.getByRole('button', { name: 'MỞ CỬA TẦNG 13', exact: true }).click();
@@ -806,13 +806,14 @@ test('music: denied media play reports blocked instead of playing and keeps game
   await scan(p, 'registry'); await decide(p, true, false);
   assert.equal((await readSave(p)).correct, 1);
   assert.match(await p.locator('#overlay-card [data-audio-status]').innerText(), /chưa cho phép phát nhạc/);
-  assert.equal(await p.getByRole('link', { name: 'NGHE THỬ NHẠC', exact: true }).getAttribute('href'), './assets/elevator-theme.mp3');
+  assert.equal(await p.locator('#overlay-card a').count(), 0);
+  assert.doesNotMatch(await p.locator('#overlay-card [data-audio-status]').innerText(), /NGHE THỬ/);
   assert.ok(await p.evaluate(() => window.__mediaProbe.playAttempts > 0), 'The rejected play path was exercised');
   await assertNoMediaRejections(p);
   t.diagnostic(JSON.stringify({ status, playAttempts: await p.evaluate(() => window.__mediaProbe.playAttempts) }));
 }, { media: true, mediaFault: 'blocked' }));
 
-test('music: real score network failure reports failed with playable fallback and a trapped preview link', t => withPage(async p => {
+test('music: real score network failure reports failed with playable fallback and accessible sound controls', t => withPage(async p => {
   const failedRequests = [];
   p.on('requestfailed', request => failedRequests.push({ url: request.url(), failure: request.failure() }));
   await start(p);
@@ -828,14 +829,81 @@ test('music: real score network failure reports failed with playable fallback an
   assert.ok(fallback.minRms > 0.005, 'Procedural fallback continues when the MP3 cannot load');
   await scan(p, 'registry'); await decide(p, true, false);
   assert.equal((await readSave(p)).correct, 1);
-  const link = p.getByRole('link', { name: 'NGHE THỬ NHẠC', exact: true });
-  assert.equal(await link.getAttribute('href'), './assets/elevator-theme.mp3');
-  assert.equal(await link.getAttribute('target'), '_blank');
-  await link.focus(); await p.keyboard.press('Tab');
-  assert.equal(await p.evaluate(() => document.activeElement === document.querySelector('#overlay-card button')), true, 'Tab from the last preview link wraps to the first modal control');
+  assert.equal(await p.locator('#overlay-card a').count(), 0);
+  const toggle = p.locator('#overlay-card [data-sound-toggle]');
+  await toggle.focus(); await p.keyboard.press('Tab');
+  assert.equal(await p.evaluate(() => document.activeElement === document.querySelector('#overlay-card button')), true, 'Tab from the sound control wraps to the first modal control');
   await p.keyboard.press('Shift+Tab');
-  assert.equal(await link.evaluate(element => element === document.activeElement), true, 'Shift Tab wraps back to the preview link');
+  assert.equal(await toggle.evaluate(element => element === document.activeElement), true, 'Shift Tab wraps back to the sound control');
   assert.match(await p.locator('#overlay-card [data-audio-status]').innerText(), /Không tải\/phát được nhạc/);
   await assertNoMediaRejections(p);
   t.diagnostic(JSON.stringify({ failed, fallback }));
 }, { media: true, mediaFault: 'network', audio: true }));
+
+
+test('story: opening presents a deadline without disclosing the old report or final confession', () => withPage(async p => {
+  const splash = await p.locator('#overlay-card').innerText();
+  assert.match(splash, /ba ca cuối/);
+  assert.equal(await p.locator('#overlay-card a').count(), 0);
+  assert.equal(await p.locator('#overlay-card [data-sound-toggle]').count(), 1);
+  assert.match(splash, /cuộc gọi không có số/);
+  assert.doesNotMatch(splash, /2013|cabin trống|đã chết|mất tích|Kẻ Đi Nhờ|còn sống/);
+  await p.locator('#overlay-card .main-cta').click();
+  const firstNight = await p.locator('#overlay-card').innerText();
+  assert.match(firstNight, /bộ điều khiển.*tháo/);
+  assert.match(firstNight, /vết sẹo/);
+  assert.doesNotMatch(firstNight, /2013|cabin trống|đã chết|mất tích|Kẻ Đi Nhờ/);
+  await advance(p);
+  await scan(p, 'registry');
+  assert.doesNotMatch(await p.locator('#inspection-report').innerText(), /Mai thật|an toàn|được cho vào/);
+}));
+
+for (const admitted of [false, true]) {
+  test(`story: recording echoes actual ${admitted ? 'admissions' : 'refusals'} through night changes and reload`, () => withPage(async p => {
+    await start(p);
+    const decisions = safe.slice();
+    decisions[0] = admitted; decisions[1] = admitted; decisions[3] = admitted;
+    for (let i = 0; i < 3; i++) await decide(p, decisions[i]);
+    await decide(p, admitted, false);
+    await p.locator('#overlay-card .main-cta').click();
+    const summary = await p.locator('#overlay-card .lead').innerText();
+    const action = admitted ? 'CHO PHÉP' : 'TỪ CHỐI';
+    const opposite = admitted ? 'TỪ CHỐI' : 'CHO PHÉP';
+    assert.ok(summary.includes(`LÊ HOÀNG MINH — ${action}`));
+    assert.ok(!summary.includes(`LÊ HOÀNG MINH — ${opposite}`));
+    await advance(p);
+    for (let i = 4; i < 8; i++) await decide(p, decisions[i]);
+    await scan(p, 'log');
+    const huy = await p.locator('#inspection-report').innerText();
+    assert.ok(huy.includes(`TRẦN QUỐC HUY — ${action}`));
+    const before = await readSave(p);
+    await p.reload({ waitUntil: 'domcontentloaded' }); await advance(p);
+    assert.equal(await p.locator('#inspection-report').innerText(), huy);
+    assert.deepEqual(await readSave(p), before, 'Hearing an old decision does not invent a new action or evidence');
+    await decide(p, false);
+    await scan(p, 'camera');
+    const mai = await p.locator('#inspection-report').innerText();
+    assert.ok(mai.includes(`NGUYỄN MAI — ${action}`));
+    assert.ok(!mai.includes(`NGUYỄN MAI — ${opposite}`));
+    assert.match(mai, /803.*Mai|Mai.*803/);
+  }));
+}
+
+test('story: original confession distinguishes the three victims from living Linh without granting unseen evidence', () => withPage(async p => {
+  await start(p); await finale(p);
+  const state = await readSave(p);
+  assert.equal(state.evidence, 0);
+  const original = await p.locator('[data-original-recording]').innerText();
+  assert.match(original, /AN:.*Tám.*Chín.*Mười/s);
+  assert.match(original, /LINH:.*Không còn ai trong cabin/s);
+  const final = await p.locator('#overlay-card').innerText();
+  assert.match(final, /BẢY · AN · VÂN — CHƯA TRỞ VỀ/);
+  assert.match(final, /NGƯỜI XÁC NHẬN: LINH — CÒN SỐNG/);
+  assert.match(final, /Bạn đã về nhà đêm ấy/);
+  assert.doesNotMatch(final, /BẢY · AN · VÂN · LINH|Linh.*mất tích/);
+  assert.deepEqual(await readSave(p), state);
+  await p.reload({ waitUntil: 'domcontentloaded' });
+  await p.getByRole('button', { name: 'TIẾP TỤC CA TRỰC →', exact: true }).click();
+  assert.equal(await p.locator('[data-original-recording]').innerText(), original);
+  assert.deepEqual(await readSave(p), state);
+}));

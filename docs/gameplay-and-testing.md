@@ -5,10 +5,10 @@
 - Mỗi hành khách có tối đa hai nguồn xác minh khác nhau. Nguồn đã mở có thể đọc lại bằng nút tương ứng hoặc phím 1–3, không tốn lượt và không cộng lại bằng chứng/điểm. Tải lại trang rồi tiếp tục ca trực giữ các nguồn đã mở và hiển thị lại nguồn đọc gần nhất, kể cả khi vừa đọc lại nguồn cũ.
 - Bằng chứng chỉ cộng một lần cho mỗi case: 25 điểm. Mỗi quyết định đúng cộng 100 điểm. Chơi đúng cả 12 case và thu thập đủ 10 bằng chứng đạt 1450 điểm.
 - SIGNAL là chất lượng đường truyền: ổn định trong đêm đầu, nhiễu từ đêm thứ hai. Cả người an toàn và không an toàn đều có thể xuất hiện trong mỗi trạng thái tín hiệu. Cần đối chiếu hồ sơ, camera và log.
-- Lời thoại Huy, ghi chú chìa khóa của Bảy, manh mối Mai/Huy/Minh, chuyển đêm, tổng kết ca và lời kể The Truth dùng lịch sử lựa chọn thực tế. Các hàm sở hữu nội dung là `caseQuote()`, `caseNote()`, `clueText()`, `nightBody()`, `nightSummaryText()` và `endingText()` trong [game.js](../dist/game.js). Xem [hướng dẫn cốt truyện — có spoiler](story-guide.md) khi chỉnh các nhánh này.
+- Lời thoại Huy, ghi chú chìa khóa của Bảy, manh mối Mai/Huy/Minh, chuyển đêm, tổng kết ca và lời kể The Truth dùng lịch sử lựa chọn thực tế. Các hàm sở hữu nội dung là `caseQuote()`, `caseNote()`, `clueText()`, `nightBody()`, `nightSummaryText()`, `choiceEcho()` và `endingText()` trong [game.js](../dist/game.js). Xem [hướng dẫn cốt truyện — có spoiler](story-guide.md) khi chỉnh các nhánh này.
 - Modal giữ focus bên trong và khóa tương tác nền. Sau khi đóng modal, focus trở về hành khách hiện tại; dùng phím 1–3 để xác minh, ←/→ để từ chối/cho phép. Khi focus nằm trong tab hồ sơ, ←/→ chuyển tab (quay vòng), Home/End chọn tab đầu/cuối; các phím này không quyết định hành khách. Chỉ tab đang chọn nằm trong thứ tự Tab.
 - Khóa tầng 13 mở The Keeper; cắt điện mở The Silence. Mở cửa cho The Truth khi evidence ≥ 4, trust ≥ 4 và breach ≤ 1; các trường hợp mở cửa khác cho The Replacement.
-- Finale luôn hiển thị danh sách cứu hộ và hướng dẫn cần mở cơ học, không cộng bằng chứng chưa đọc. The Truth kể Ông Bảy dùng chìa khóa nếu được cho vào ở case 11; nếu bị từ chối, người trực dùng cần dưới nắp bàn. Lời kể cũng phản ánh việc An và Linh từng được nhận hay bị từ chối, và xử lý lượt mượn tên nếu có một breach. Các nhánh này giữ nguyên điều kiện ending, điểm số, giới hạn xác minh và save.
+- Finale luôn hiển thị danh sách cứu hộ và hướng dẫn cần mở cơ học, không cộng bằng chứng chưa đọc. The Truth kể Ông Bảy dùng chìa khóa nếu được cho vào ở case 11; nếu bị từ chối, người trực dùng cần dưới nắp bàn. Lời kể cũng phản ánh việc An và phần ký ức Linh từng được nhận hay bị từ chối, và xử lý lượt mượn tên nếu có một breach. Linh hiện tại còn sống; finale phân biệt ba nạn nhân với người ký và tự hiện bản chép âm gốc. Các bản phát lại dùng đúng quyết định trong history, kể cả sau reload. Các nhánh này giữ nguyên điều kiện ending, điểm số, giới hạn xác minh và save.
 
 ## Âm thanh
 
@@ -16,7 +16,7 @@
 - Nút âm thanh có ở thanh trên và trong mọi modal. Lựa chọn tắt âm được lưu cùng cơ chế storage của game và giữ qua reload; bật lại trong ca trực khôi phục tiếng nền. Trình đọc màn hình nhận được nhãn bật/tắt và trạng thái hiện tại.
 - Âm nền tạm dừng khi trang bị ẩn/rời trang; khi quay lại ca đang chơi, game thử tiếp tục và có thể cần thao tác mới nếu browser chặn phát. Âm nền dừng ở ending, chỉ còn cue kết thúc. Chơi lại dùng lại audio context hiện có.
 - [audio.js](../dist/audio.js) phát [nhạc nền gốc MP3](../dist/assets/elevator-theme.mp3) qua media element và sinh ambience/hiệu ứng bằng Web Audio; các lời gọi theo gameplay nằm trong [game.js](../dist/game.js). File nhạc được tải từ asset của game, không qua dịch vụ nhạc bên thứ ba. Lỗi phát MP3 hoặc Web Audio không chặn gameplay.
-- Trạng thái nhạc trong footer/modal phản ánh chờ tương tác, tải, phát, tạm dừng, tắt hoặc lỗi. Nếu chưa nghe, bấm **NGHE THỬ NHẠC** để mở MP3 bằng trình phát riêng của browser; trình phát này có điều khiển riêng, độc lập nút mute trong game. Kiểm tra trạng thái tắt tiếng của tab và thiết bị đầu ra đang chọn. “Đang phát” chỉ xác nhận trạng thái media, không chứng minh người chơi đã nghe tiếng.
+- Trạng thái nhạc trong footer/modal phản ánh chờ tương tác, tải, phát, tạm dừng, tắt hoặc lỗi. Nếu file tải lỗi, tắt rồi bật âm thanh để thử tải lại. “Đang phát” chỉ xác nhận trạng thái media, không chứng minh người chơi đã nghe tiếng.
 
 ### Tạo lại nhạc nền
 
@@ -66,4 +66,8 @@ Suite kiểm tra bốn ending, điểm/bằng chứng, chống thu thập trùng
 
 Các ca âm thanh đo PCM bằng `AudioContext`/`AnalyserNode` thật tại đầu ra của graph, kiểm tra âm nền liên tục, cue, mute/unmute, reload/tiếp tục, chơi lại không nhân context và fallback. Phép đo này xác nhận tín hiệu do browser tạo ra; không thay thế việc nghe thử qua loa/tai nghe hoặc xác nhận âm lượng phần cứng của người chơi.
 
-Các ca nhạc kiểm tra MP3 thật được decode và `currentTime` tăng sau tương tác; mute/reload/ending dừng đúng, lỗi play hoặc tải file có trạng thái tương ứng, và liên kết nghe thử nằm trong vòng focus của modal. Trạng thái media và PCM không phải bài nghe thử phần cứng.
+Các ca nhạc kiểm tra MP3 thật được decode và `currentTime` tăng sau tương tác; mute/reload/ending dừng đúng, lỗi play hoặc tải file có trạng thái tương ứng, và nút âm thanh nằm trong vòng focus của modal. Không có liên kết mở trình phát nhạc riêng trong giao diện. Trạng thái media và PCM không phải bài nghe thử phần cứng.
+
+## Tích hợp P2Game
+
+[Adapter SDK](../dist/p2game-platform.js) nối readiness, lifecycle và gửi điểm của ca vừa kết thúc; [test iframe](../tests/p2game-integration.cjs) chạy game/SDK/HostBridge thật dưới CSP chỉ cho tài nguyên cùng origin. Các phản hồi nhận hoặc từ chối điểm trong test là phần host cục bộ có kiểm soát, không chứng minh API hosted đã nhận điểm. `npm test` chạy suite gameplay trước rồi suite SDK; không chạy song song vì dùng chung cổng8080. Xem [hướng dẫn P2Game](p2game-integration.md) cho manifest, đóng gói và giới hạn nền tảng.

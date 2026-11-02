@@ -3,7 +3,7 @@
   'use strict';
   var Context=window.AudioContext||window.webkitAudioContext;
   var context=null,master=null,noiseBuffer=null,ambience=null;
-  var muted=false,active=false,unlocked=false,night=1,resuming=null;
+  var muted=false,active=false,unlocked=false,night=1,resuming=null,platformPaused=false;
   var effects=[];
   var music=document.getElementById('background-music'),musicState='ready',musicAttempt=0,api;
   function notify(){if(api&&typeof api.onStatusChange==='function')api.onStatusChange()}
@@ -20,18 +20,18 @@
       var pending=music.play();
       if(pending)pending.then(function(){
         if(request!==musicAttempt)return;
-        if(muted||!active||document.hidden){music.pause();return}
+        if(muted||!active||document.hidden||platformPaused){music.pause();return}
         musicState='playing';notify();
       },function(error){
         if(request!==musicAttempt)return;
-        if(muted||!active||document.hidden)return;
+        if(muted||!active||document.hidden||platformPaused)return;
         musicState=error.name==='NotAllowedError'?'blocked':'failed';notify();
       });
     }catch(e){musicState='failed';notify()}
   }
   if(music){
     music.addEventListener('playing',function(){
-      if(muted||!active||document.hidden){music.pause();return}
+      if(muted||!active||document.hidden||platformPaused){music.pause();return}
       musicState='playing';notify();
     });
     music.addEventListener('waiting',function(){if(active&&!muted&&!music.error){musicState='loading';notify()}});
@@ -72,7 +72,7 @@
       resuming=context.resume();
       resuming.then(function(){
         resuming=null;
-        if(muted||document.hidden)pause();
+        if(muted||document.hidden||platformPaused)pause();
       },function(){resuming=null});
     }catch(e){resuming=null}
   }
@@ -107,7 +107,7 @@
     ambience={sources:[hum,harmonic,fan],nodes:[hum,humGain,harmonic,harmonicGain,fan,filter,fanGain],hum:hum,filter:filter};
   }
   function start(){
-    if(muted||document.hidden)return false;
+    if(muted||document.hidden||platformPaused)return false;
     active=true;unlocked=true;
     startMusic();
     if(ensureContext()){startAmbience();ramp(master.gain,.72,.12);resume();return true}
@@ -165,7 +165,7 @@
     active=false;stopAmbience();stopEffects();
     musicAttempt++;if(music){music.pause();music.currentTime=0;if(music.error)music.load()}
     musicState='stopped';notify();
-    if(muted||document.hidden||!ensureContext())return;
+    if(muted||document.hidden||platformPaused||!ensureContext())return;
     ramp(master.gain,.72,.04);resume();
     try{
       if(ending==='truth'){
@@ -186,6 +186,11 @@
     else if(active){if(music&&music.error){musicAttempt++;music.load()}start()}
     notify();
   }
+  function setPaused(value){
+    platformPaused=!!value;
+    if(platformPaused){stopEffects();pause()}
+    else if(unlocked&&active&&!muted&&!document.hidden)start();
+  }
   function setNight(value){
     night=value;
     if(ambience){ramp(ambience.hum.frequency,110+(night-1)*1.5,.8);ramp(ambience.filter.frequency,650+(night-1)*90,.8)}
@@ -198,6 +203,6 @@
   window.addEventListener('pageshow',function(){if(unlocked&&active&&!muted)start()});
   document.addEventListener('pointerdown',function(){if(unlocked&&active&&!muted)start()});
   document.addEventListener('keydown',function(){if(unlocked&&active&&!muted)start()});
-  api={start:start,play:play,finish:finish,setMuted:setMuted,setNight:setNight,status:status,supported:typeof Context==='function'||!!music};
+  api={start:start,play:play,finish:finish,setMuted:setMuted,setPaused:setPaused,setNight:setNight,status:status,supported:typeof Context==='function'||!!music};
   window.ElevatorAudio=api;
 })();

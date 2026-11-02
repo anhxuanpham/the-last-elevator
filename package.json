@@ -7,14 +7,18 @@
     "node": ">=22"
   },
   "scripts": {
-    "check": "node --check dist/audio.js && node --check dist/game.js && node --check tests/gameplay-regression.cjs",
-    "test": "node --test tests/gameplay-regression.cjs",
-    "test:webkit": "BROWSER=webkit node --test tests/gameplay-regression.cjs",
+    "check": "node --check dist/audio.js && node --check dist/game.js && node --check dist/p2game-platform.js && node --check tests/gameplay-regression.cjs && node --check tests/p2game-integration.cjs && node --check tests/static-game-server.cjs && node --check scripts/capture-store-assets.cjs && node --check scripts/validate-p2game.cjs",
+    "test": "node --test tests/gameplay-regression.cjs && node --test tests/p2game-integration.cjs",
+    "test:webkit": "BROWSER=webkit npm test",
     "dev": "wrangler dev --port 8787",
     "deploy:check": "wrangler deploy --dry-run",
-    "deploy": "wrangler deploy"
+    "deploy": "wrangler deploy",
+    "p2game:check": "node scripts/validate-p2game.cjs",
+    "p2game:assets": "node scripts/capture-store-assets.cjs",
+    "p2game:package": "python3 scripts/package-p2game.py"
   },
   "devDependencies": {
+    "@p2game.io/sdk": "1.1.0",
     "playwright": "1.61.1",
     "wrangler": "4.156.1"
   }

@@ -1,54 +1,46 @@
 # Cốt truyện The Last Elevator: Floor 13
 
-Tài liệu cho người viết và bảo trì game, có spoiler toàn bộ truyện. Nội dung thực thi nằm trong `cases`, `scenes`, `clueText()` và `endingText()` của [game.js](../dist/game.js).
+Dành cho người viết/bảo trì; có spoiler. Nội dung thực thi ở `cases`, `scenes`, các helper theo history và `endings` trong [game.js](../dist/game.js). Đây là canon thay thế bản Linh đã chết/mất tích; không ghép hai bản.
 
-## Bí mật trung tâm
+## Bí mật và động cơ
 
-Vesper Tower có 12 tầng dân dụng. “13” là mã chiếu nghỉ bảo trì bên trên tầng 12, bị xóa khỏi sơ đồ sau tai nạn năm 2013. Lúc 01:13, cabin số 1 mắc kẹt ở đó khi một rơ-le bị thay sai. Bảy vào cứu An và mẹ; Linh trực bàn điều khiển. Một giọng nói giả danh ban quản lý ra lệnh ngắt cả nguồn phụ, làm cửa cứu hộ đóng trước khi việc cứu người hoàn tất. Linh đi vào tìm họ rồi mất tích. Mất tín hiệu bị phần mềm ghi nhầm thành cabin trống; ban quản lý năm 2013 duyệt báo cáo và gạch tên khi chưa đối chiếu phụ lục cứu hộ. Đây là lỗi xác minh khiến hồ sơ bị khép sai, không quy trách nhiệm cho Hạnh thật và không coi cảm biến mất tín hiệu là bằng chứng cabin thực sự không có người.
+Linh còn sống, từng trực Vesper Tower năm 2013. Cô nhận ba ca cuối trước khi bộ điều khiển cũ được tháo và xóa bộ nhớ. Cư dân vẫn ở tòa nhà: chỉ bộ điều khiển được thay, không phải toàn bộ tòa nhà bị phá. Cô quay lại trước khi dấu vết cuối bị mất, nhưng vẫn tránh nghe trọn lời khai. Không có mất trí nhớ hay nhân viên mới bất ngờ hóa thành nạn nhân.
 
-Một dị thường không có danh tính đã chen vào đường intercom trước khi cuộc cứu hộ thất bại. Khoảng trống trong biên bản sau đó trở thành chỗ trú lâu dài của nó — Kẻ Đi Nhờ. Báo cáo sai không tạo ra giọng nói trước đó; nó che mất tên người thật, cho thực thể cơ hội chiếm tên. Nó chỉ sao chép được những danh tính, lời nói và mệnh lệnh mà hệ thống đã ghi, cần sự cho phép của người trực để qua cửa, và muốn dùng tên Linh làm giấy thông hành. Nó giả Minh, người lạ, Hạnh, Huy và Mai; không phải mọi hồn ma đều là nó. Bảy và An tìm cách kết thúc chuyến cứu hộ, không yêu cầu ghi lại số tầng hay xóa log.
+Năm 2013, rơ-le giữ cabin ở chiếu nghỉ bảo trì 13, bên trên 12 tầng dân dụng. Bảy vào cứu An và mẹ Vân sau khi bảo Linh tắt điện mà không chỉ rõ cầu dao. Linh trấn an An: “Cô ở đây. Cứ đếm đến mười.” Cô nghe tiếng An, sợ đường điện chập rồi ngắt cả nguồn phụ đang giữ chốt cứu hộ mở. Linh được đưa ra ngoài lúc 02:06 và ký cabin trống. Bảy, An, Vân không trở về; ba tên bị loại khỏi báo cáo. Linh nằm ở mục người xác nhận, không phải nạn nhân thứ tư. Sự cố cơ khí khởi đầu tai nạn; lựa chọn và lời khai sai của người sống làm chuyến cứu hộ không được khép lại.
 
-Linh trong game là phần ký ức bị giữ ở bàn trực từ năm 2013. Mỗi chu kỳ có ba đêm; phòng trực nối với sảnh hiện tại nên cư dân và kỹ thuật viên thật vẫn xuất hiện. Đồng hồ quay về vùng 01:13 ở mỗi đêm là dấu hiệu chu kỳ, không phải 12 hành khách đến trong một đêm. Linh thứ hai ở lượt 12 là phần ký ức còn giữ lại việc Linh đi cứu người, không phải một bản sao muốn đi ra ngoài. Cho bản sao vào cabin giúp nó tiếp cận hệ thống; chỉ cửa cuối cùng cho phép một danh tính ra ngoài tòa nhà. Không định nghĩa thêm nguồn gốc vũ trụ của thực thể; nguyên nhân, năng lực và mục tiêu có payoff rõ trong hồ sơ/ending.
+Thứ trong đường dây chỉ có các giọng đã thu. Nó trú dưới báo cáo trống, ghép lời của người thật và lệnh bàn trực để xin quyền. Các khuôn mặt không có quyền mới nếu Linh chưa cấp. Nó muốn chữ ký bàn giao hiện tại để mang giọng/tên Linh ra ngoài. Giữ nguồn phụ và đối chiếu phụ lục/lời khai có thể khép chuyến cứu hộ mà không ký cho nó. Không cần kể tên hay nguồn gốc vũ trụ của nó; không để nó tự giới thiệu phản diện và giải thích kế hoạch.
 
-## Ba hồi và nhân vật
+Nhãn2013 trong bản chép âm hiện tại có lời chơi mới là bản phát bị lồng tiếng, không phải lịch sử thật bị sửa hoặc dữ liệu gốc trong vùng chỉ đọc đã bị ghi đè. Băng gốc11giây ở finale cho thấy tiếng An, tiếng cầu dao và lời xác nhận của Linh. Nút âm thanh phát nhạc/cue; thoại/bản chép âm là văn bản, chưa có voice acting.
 
-| Đêm / lượt | Chức năng trong truyện | Căn cứ quyết định |
+## Nhịp truyện và vật chứng
+
+| Đêm | Mạch cảnh | Điều giữ lại cho hồi sau |
 | --- | --- | --- |
-| 1 / Mai thật | Thiết lập đời thường và câu thoại sẽ bị sao chép | Cư dân, thẻ và camera khớp; không sửa log |
-| 1 / Huy thật | Đơn D-719 làm mốc xác thực cho bản sao đêm 3 | Đơn có xác nhận độc lập từ 1102 |
-| 1 / Bảy | Cảnh báo có hai nguồn điện và sự cố 2013 | Không ép thay quy trình; nguồn phụ giữ khóa cứu hộ mở |
-| 1 / Minh giả | Bản sao đầu tiên; danh tính đúng nhưng hành trình sai | Hai lần dùng thẻ, không có lượt đi xuống |
-| 2 / Minh thật | Giải thích lỗi rơ-le, nguồn phụ và mệnh lệnh giả | Phiếu sửa chữa trước giờ hiện tại; người đi từ bãi xe |
-| 2 / An | Mục tiêu cứu người, phân biệt ma với thực thể nguy hiểm | Địa chỉ cũ, tên mẹ và báo cáo cứu hộ khớp; không đòi ra khỏi tòa nhà |
-| 2 / Người lạ | Thực thể lộ dạng và đòi hợp thức hóa tầng 13 | Không có tên; chỉ có áo khoác; yêu cầu sửa sơ đồ |
-| 2 / Hạnh giả | Lặp mệnh lệnh che giấu năm 2013 | Hạnh thật vắng mặt; tài khoản đã bị xóa; đòi xóa log |
-| 3 / Huy giả | Thực thể dùng lịch sử đã ghi làm mồi | Trạng thái giao hàng khớp lựa chọn; tài khoản 2013 vẫn không hợp lệ |
-| 3 / Mai giả | Bản sao dùng lại đúng câu thoại và video cũ | Tình trạng hiện tại của Mai và dấu thời gian không khớp bản phát lại |
-| 3 / Bảy | Xác nhận cứu hộ và giải pháp cơ học | Ngắt nguồn chính để khóa động cơ; giữ nguồn phụ; mở cửa thủ công |
-| 3 / Linh | Reveal người trực cũng là người mất tích; phân biệt nhận lại ký ức với cho bản sao ra ngoài | Sổ trực/mẫu chữ ký cũ, camera không ghi lượt đi vào, yêu cầu về phòng trực G |
+| 1 | Mai ôm cây, Huy sạc điện thoại/chờ người nhận, Bảy và cầu dao có chỉ đỏ, Minh không có hành trình hợp lệ | Cửa sổ thứ ba, câu cảm ơn vì đã đợi, mười vạch bút chì, tiếng click bị lặp; recap mang đúng lệnh vừa chọn |
+| 2 | Minh có phiếu thật, An giữ chỗ cạnh mình, người lạ xin ký tên, Hạnh xin xóa trước bàn giao | Tai gấu/chỉ đỏ và lời nhờ đừng đếm;11giây bị tách; máy không tự đánh giá cabin trống; chữ ký Linh hằn qua giấy |
+| 3 | Huy/Mai dùng lại giọng và lựa chọn đêm đầu, Bảy nhận trách nhiệm của mình, Linh19tuổi xin về bànG | Sẹo/bỏng nối người sống với băng cũ; ba nạn nhân khác dòng người ký; tiếng đếm không được tua qua |
+| Finale | Bản chép11giây và lời khai hiện đủ trong scene bắt buộc | Linh sống sót, đã nghe và vẫn ký; người chơi chọn giữ, đối chiếu/mở, hoặc ngừng đối chiếu |
 
-Mai và Huy là người sống, không liên quan trách nhiệm tai nạn. Minh thật khôi phục chẩn đoán nhưng không thể chọn thay người trực. Hạnh thật không xuất hiện trực tiếp; hồ sơ xác nhận vắng mặt, không đồng nhất bà với mệnh lệnh giả. Bảy có lỗi vì không cứu kịp nhưng tiếp tục tìm người; An muốn trở về với mẹ. Linh phải chọn tiếp tục làm người canh giữ hay nhận lại tên thật của người đã mất.
+Lời giải không xuất hiện ở splash/intro. Manh mối là quan sát, mốc giờ và yêu cầu có thể đối chiếu; không viết sẵn “thật/giả”, “đây là thực thể” trong nguồn xác minh. Người chết không tự động nguy hiểm, người có tên không tự động an toàn. Tên/giọng giống nhau phải kiểm tra hành trình và quyền đang xin.
 
-## Quy tắc continuity
+## Lựa chọn và continuity
 
-- Không đổi đáp án, thang điểm hoặc ngưỡng ending để chữa vấn đề văn bản.
-- Không mặc định Huy đã giao hàng, Mai đã lên tầng 8, hoặc Minh giả đã bị từ chối; lấy trạng thái từ history.
-- Huy giả có thể nói dối: nếu đơn đêm đầu đã giao, câu “vẫn chưa giao” cố ý mâu thuẫn với hai nguồn xác nhận; nếu bị từ chối, hắn nhắc đúng việc đó nhưng tài khoản đã bị xóa và thiếu xác nhận mới vẫn khiến yêu cầu không hợp lệ. Không sửa lời nói dối có chủ đích thành lỗi continuity của người kể.
-- Nếu Bảy bị từ chối lượt 3, ông mang chìa khóa đi; không để lại chìa khóa rồi lại kể người chơi chưa từng nhận nó. Chìa khóa chỉ được giao ở lượt 11 nếu cho ông vào.
-- The Truth: nếu mất chìa khóa, dùng cần mở cứu hộ được khắc hướng dẫn bên trong bảng điều khiển ở finale; không tự hồi sinh item hoặc cộng bằng chứng.
-- Nếu An/Linh/Minh bị từ chối, ending/chuyển cảnh không nói họ đã đứng cạnh người chơi hoặc trao tài liệu. Dấu vết có thể đã có trong thiết bị, nhưng cần phân biệt với món đồ được trao.
-- Không coi người chết hoặc thiếu bóng là kết luận tuyệt đối; đối chiếu hành trình, yêu cầu và mục đích. Tránh biến chỉ dấu SIGNAL hoặc một từ trong mô tả thành đáp án UI.
-- Chỉ kể đã đọc một tài liệu cụ thể khi nguồn tương ứng đã được mở; các cảnh bắt buộc có thể cho thấy dấu vết mới nhưng không tự cộng evidence.
-- Finale bắt buộc tự hiển thị danh sách cứu hộ và hướng dẫn cần mở cơ học, kể cả người chơi chưa mở một nguồn manh mối cụ thể hoặc từ chối Linh. Không phụ thuộc một vật phẩm/tài liệu không bắt buộc để giữ nguyên ngưỡng Truth.
-- The Truth có thể đạt với một breach: bản đối chiếu khôi phục hủy lượt mượn tên không khớp, giữ thực thể sau cửa trước khi xác nhận những người được giải thoát. Với nhiều quyền lạ hoặc thiếu đối chiếu/niềm tin, mở cửa dẫn tới Replacement theo công thức có sẵn.
+- Giữ12safe flags,10evidence sources, điểm, hai nguồn/case, ngưỡng ending và save. Các owner về gameplay ở [gameplay-and-testing](gameplay-and-testing.md).
+- `choiceEcho()` lấy action từ history và tên từ canonical case; không tin tên tùy ý từ save, không tự bịa lựa chọn khác. Recap đêm1 lặp lựa chọn Minh; đêm2 lặp An/Hạnh; Huy/Mai đêm3 lặp quyết định đêm1; finale và một số ending tiếp tục dùng lịch sử đó. Reload phải khôi phục đúng.
+- Huy giả nói dối về việc chưa giao nếu đơn đã hoàn tất. Nếu bị từ chối thật, lời thoại biết việc đó nhưng mã hết hạn/không có yêu cầu mới vẫn bất hợp lệ. Không đổi thành “đêm qua”: đó là đêm đầu.
+- Mai thật vẫn về803 bằng cầu thang nếu bị từ chối. Chậu cây ở cửa sổ và cuộc gọi hình đêm3 hợp lệ ở cả hai nhánh. Không kể cô được cho lên bằng cabin nếu history từ chối.
+- Bảy mang chìa khóa khi bị từ chối đêm1; chỉ trao ở lượt11 nếu được cho vào. Nếu không nhận chìa, Truth dùng cần cứu hộ khắc dưới nắp bàn, không hồi sinh item. Bảy bị từ chối lượt11 đi về chiếu nghỉ, không đứng ở tủ thay người chơi.
+- Minh bị từ chối rời đi, không trao bản chẩn đoán/tai nghe. Phiếu cũ có sẵn không tương đương evidence đã đọc. An bị từ chối chờ ở tầng9; Truth gọi từ đó thay vì đặt bé cạnh người chơi.
+- Linh trẻ là phần ký ức/lời khai của cùng người đang sống, không bản sao xin ra cổng. Cho về bànG là chịu nghe; từ chối không làm mất bản lưu độc lập. Finale vẫn tự hiện chứng cứ gốc để lựa chọn cuối không phụ thuộc người chơi đã đọc nguồn nào. Không tự cộng evidence.
+- Thứ trong loa không có tiếng riêng: dùng lời đã nói ở mọi nhánh hoặc có bản lưu xác định. Không dùng tiếng khách “đã nhận hàng” nếu nhánh đó giao thất bại.
 
-## Kết thúc
+## Bốn hậu quả
 
-| Kết thúc | Hành động / điều kiện hiện có | Hậu quả phải khép lại |
-| --- | --- | --- |
-| The Keeper | Khóa tầng 13 | Ngăn thực thể đi ra; Linh ở lại giữ liên động, người mắc kẹt chưa được giải thoát; ba đêm bắt đầu lại |
-| The Replacement | Mở cửa khi chưa đủ điều kiện Truth | Danh sách sai không phân biệt được ai được rời đi; thực thể mượn tên/chữ ký Linh ra khỏi tòa nhà, Linh thật bị giữ trong bản ghi |
-| The Truth | Mở cửa, evidence ≥4 / trust ≥4 / breach ≤1 | Bằng chứng phục hồi tên người mất tích, còn đủ xác nhận/kiểm soát để không cho thực thể chiếm danh tính; giữ nguồn phụ, mở cửa cứu hộ; An/mẹ/Bảy và ký ức Linh được giải thoát; hồ sơ chính thức khép lại |
-| The Silence | Cắt nguồn điện | Ngắt cả hai nguồn lặp lại sai lầm cứu hộ; không ai thoát, chu kỳ bị treo trong tối thay vì được giải quyết |
+| Ending / điều kiện hiện có | Payoff |
+| --- | --- |
+| Keeper / khóa13 | Cửa giữ kín, Linh ký bàn giao nguyên trạng; lời khai sai và tiếng đếm được chép sang máy mới. Sự che giấu tiếp tục, không coi đây là Truth khác màu |
+| Replacement / mở khi thiếu điều kiện | Bản đối chiếu không đủ; thứ ấy ký bằng giọng/tên Linh. Người ngoài nghe “tôi ở đây”, Linh thật thành tạp âm. Không mặc định có phiên giả đã lọt trước đó khi breach0 |
+| Truth / mở, evidence≥4, trust≥4, breach≤1 | Hủy tối đa một phiên lạ bằng đối chiếu; giữ nguồn phụ/mở thủ công, An/Vân/Bảy kết thúc chuyến đi trong băng, không sống lại. Linh giữ cả báo cáo sai lẫn đính chính bằng tên mình, làm chứng ở đời thật; không tự nhận được tha thứ |
+| Silence / cắt điện | Dừng đối chiếu. Sáng đội thợ chép báo cáo được duyệt rồi xóa dữ liệu theo lịch; không gán việc mất điện tự xóa bộ nhớ chỉ đọc. Tai gấu và nhịp đếm trở lại trong giấc ngủ |
 
-Các đoạn kết có thể thừa nhận lựa chọn trước đó nhưng không thay đổi công thức mở ending. The Truth không có người chết bất ngờ từ một danh sách mới chưa từng được gợi trước: tên Linh đã được cài ở intro, sổ trực và lượt cuối.
+Truth có thể đạt khi đã từ chối một người an toàn hoặc có một breach theo công thức; văn bản phải nhận lỗi đó, không kể một lượt chơi hoàn hảo giả. Cả bốn ending cần hậu quả đời thật và một hình ảnh cuối, không tổng kết lore thêm một lần.

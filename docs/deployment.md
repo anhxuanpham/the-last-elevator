@@ -45,3 +45,7 @@ npm run deploy
 ```
 
 Push GitHub và deploy là hai thao tác riêng; project chưa cấu hình tự động deploy khi push. Các plan, báo cáo, ảnh kiểm thử và đường dẫn riêng của máy nằm trong `plans/`, được giữ local qua `.gitignore`.
+
+## Bản P2Game
+
+Worker và P2Game dùng chung thư mục `dist/`. Chạy `npm run p2game:check` rồi `npm run p2game:package` để tạo archive đúng gốc; xem [SDK, slug, ảnh cửa hàng và giới hạn xác minh](p2game-integration.md). P2Game có bước upload/kiểm duyệt riêng; deploy Worker không thay thế bước đó.

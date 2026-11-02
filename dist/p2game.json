@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "id": "the-last-elevator",
+  "name": "The Last Elevator: Floor 13",
+  "version": "1.0.0",
+  "description": "Ba ca trực cuối trước ngày thay bộ điều khiển thang máy. Trong vai Linh, bạn kiểm tra hồ sơ, camera và nhật ký để quyết định ai được bước vào cabin. Những giọng nói quen bắt đầu nhắc lại chính lựa chọn của bạn. Tìm khoảng băng bị cắt, đối diện lời khai cũ và khám phá bốn kết thúc trong một câu chuyện kinh dị suy luận bằng tiếng Việt.",
+  "shortDescription": "Ba đêm trực. Mười hai lượt khách. Thứ trong thang máy đang học cách nói bằng giọng của bạn.",
+  "category": "puzzle",
+  "tags": [
+    "horror",
+    "mystery",
+    "story",
+    "deduction"
+  ],
+  "ageRating": "T",
+  "languages": [
+    "vi"
+  ],
+  "controls": {
+    "keyboard": true,
+    "mouse": true,
+    "touch": true
+  },
+  "entry": "index.html",
+  "engine": "dom",
+  "engineInfo": "HTML, CSS and JavaScript",
+  "orientation": "any",
+  "minViewport": {
+    "width": 390,
+    "height": 844
+  },
+  "permissions": [
+    "audio",
+    "persistent-storage"
+  ],
+  "sdk": {
+    "version": "1.1",
+    "requiresAuth": false,
+    "cloudSave": false
+  },
+  "leaderboards": [
+    {
+      "id": "high-score",
+      "name": "Điểm ca trực",
+      "order": "DESC",
+      "maxScore": 1450,
+      "minSessionSeconds": 30
+    }
+  ],
+  "assets": {
+    "icon": "assets/store/icon.png",
+    "cover": "assets/store/cover.png",
+    "screenshots": [
+      "assets/store/gameplay.png",
+      "assets/store/inspection.png"
+    ]
+  },
+  "attestation": {
+    "ownsRights": true,
+    "containsAds": false,
+    "containsIap": false
+  }
+}

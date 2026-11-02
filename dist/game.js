@@ -13,7 +13,7 @@
     an:{name:'BÉ AN',unit:'Chưa xác định',floor:9,role:'Trẻ em · Không có người đi cùng',skin:'#cfac8f',hair:'#1c171d',coat:'#a34f51',gender:'child'},
     hanh:{name:'BÀ HẠNH',unit:'Quản lý',floor:12,role:'Ban quản lý tòa nhà',skin:'#c79a79',hair:'#2e2528',coat:'#624a5a',gender:'woman'},
     stranger:{name:'NGƯỜI LẠ',unit:'Không rõ',floor:13,role:'Không có hồ sơ',skin:'#b0b3aa',hair:'#080d10',coat:'#252f39',gender:'faceless'},
-    linh:{name:'LINH (?)',unit:'Phòng bảo vệ',floor:0,role:'Nhân viên trực ca đêm',skin:'#bb997d',hair:'#2b292a',coat:'#44575a',gender:'woman'}
+    linh:{name:'NGƯỜI TRỰC CŨ',unit:'Phòng bảo vệ',floor:0,role:'Nhân viên trực ca đêm',skin:'#bb997d',hair:'#2b292a',coat:'#44575a',gender:'woman'}
   };
   var residents=[
     ['Nguyễn Mai','803','Đang cư trú'],['Lê Hoàng Minh','602','Đang cư trú'],
@@ -22,83 +22,83 @@
   ];
   // Keys: c = camera, r = registry, l = elevator log. Each case offers 2 investigations.
   var cases=[
-    {id:1,night:1,person:'mai',floor:8,quote:'Tôi vừa tan ca. Làm ơn cho tôi lên căn 803, tối nay mệt quá.',note:'Áo khoác ướt mưa. Cô vuốt nước khỏi chiếc túi xách, chờ bạn kiểm tra.',safe:true,
-     r:'Nguyễn Mai — căn 803, cư dân đang hoạt động. Chữ ký nhận thư sáng nay khớp hồ sơ. Ghi chú của cô: nếu loa gọi một tên lạ, đừng trả lời thay người đó.',
-     c:'01:08 — Mai bước qua cửa chính từ ngoài mưa. Camera cửa và kính phản chiếu cùng ghi một người. Cô nói với lễ tân đúng câu bạn vừa nghe; thiết bị tự lưu đoạn âm thanh.',
-     l:'Thẻ 803 rời tầng 8 lúc 18:42 và vừa trở lại sảnh. Không có chuyến trùng lặp. Ở cuối trang log, một dòng không có tên hành khách nhấp nháy rồi mất.',
-     outcome:'Mai bước vào: “Ca trước cũng có người tên Linh. Chắc trùng tên thôi.” Chuông tầng 8 vang lên. Bạn nhìn thẻ áo của mình; không nhớ ai đã đưa nó cho bạn.',
-     wrong:'Mai ngồi xuống gọi ban quản lý rồi lên bằng cầu thang bộ. Trước khi đi, cô nói: “Cậu nên hỏi xem người trực trước đã về nhà chưa.” Camera vẫn ghi nhận một người sống rời sảnh.'},
-    {id:2,night:1,person:'huy',floor:11,quote:'Giao đồ ăn cho phòng 1102. Khách bảo để ngoài cửa thôi chị.',note:'Mũ bảo hiểm có vết xước mới. Túi hàng còn niêm phong của quán.',safe:true,
-     r:'Trần Quốc Huy không phải cư dân. Đơn #D-719 có xác nhận trực tiếp từ 1102 lúc 01:09 bằng số điện thoại trong sổ. Lễ tân đã đối chiếu tên quán và tiền hàng.',
-     c:'Huy dựng xe ở cửa chính, tháo găng tay rồi mang túi có logo quán vào sảnh. Hình ảnh khớp camera bãi xe. Nhãn giao hàng ghi #D-719, không phải một thẻ cư dân.',
-     l:'Yêu cầu nhận đồ #D-719 vừa được tạo từ 1102; mã đơn chỉ có hiệu lực đêm này. Hệ thống chưa ghi giao thành công. Không có yêu cầu thay sơ đồ tầng hoặc xóa nhật ký.',
-     outcome:'Huy lên tầng 11. Khách 1102 gọi xuống xác nhận đã nhận đồ, mã #D-719 được đóng. Khi cabin trở lại, loa lặp từ cuối câu cảm ơn của Huy dù anh đã ra ngoài.',
-     wrong:'Huy gọi khách ngay trước camera rồi mang hàng quay về quán. Đơn #D-719 được đánh dấu giao thất bại, không có xác nhận nhận đồ. Loa thang máy vẫn lưu nguyên giọng anh.'},
-    {id:3,night:1,person:'bay',floor:3,quote:'Cho tôi lên tủ bảo trì tầng ba. Có hai cầu dao, Linh à. Đừng để một giọng nói chọn hộ cậu lần nữa.',note:'Đồng phục bảo vệ kiểu cũ. Ông giữ chặt chùm chìa khóa, không yêu cầu mở tầng 13.',safe:true,evidenceKey:'l',
-     r:'Ông Bảy — bảo vệ phụ trách tủ bảo trì tầng 3. Hồ sơ nhân sự ngừng năm 2013, cùng ngày cabin số 1 gặp nạn. Phần lý do nghỉ việc bị phủ một lớp mực đen.',
-     c:'Camera lưu trữ 2013 có Ông Bảy dìu một người về phía cửa cứu hộ. Người trước mặt mang đúng vết rách trên tay áo. Ông chỉ vào tủ điện, không đòi sửa log hay cấp thẻ mới.',
-     l:'Phiếu bảo trì 2013: nguồn chính cấp động cơ; nguồn phụ giữ đèn và chốt cửa cứu hộ. “Dừng động cơ thì ngắt nguồn chính. Đang cứu người phải giữ nguồn phụ.” Dòng ký duyệt bị xóa, chỉ còn chữ L.',
-     outcome:'Bảy vào thang lên tủ bảo trì: “Không phải người chết nào cũng muốn hại cậu. Có những người chỉ đang tìm đường về.” Ông vẫn mang chìa khóa theo; tiếng kim loại dừng lại ở tầng 3.',
-     wrong:'Bảy khép bàn tay, mang chùm chìa khóa quay về cầu thang. “Ta sẽ tìm cách khác.” Ông không để lại chìa khóa trên quầy. Đèn nguồn phụ vẫn sáng, không có sự cố mới.'},
-    {id:4,night:1,person:'minh',floor:6,quote:'Tôi là Minh, IT tầng 6. Mở nhanh giúp tôi. Đừng ghi lượt này, hệ thống đang lỗi mà.',note:'Thẻ IT đúng tên. Anh không nhìn vào camera, chỉ nhìn nút cho phép.',safe:false,evidenceKey:'l',spooky:true,
-     r:'Lê Hoàng Minh, căn 602 — thẻ còn hiệu lực. Chân dung và mã nhân viên đều khớp. Quyền IT không cho phép miễn ghi lịch sử vào cabin; không có phiếu sửa chữa cho lượt này.',
-     c:'Người trước mặt dùng đúng giọng trong đoạn lễ tân lưu tuần trước. Hình anh không phản chiếu trên kính trong khi đèn vẫn sáng; đầu đọc nhận lại cùng một khung hình ba lần.',
-     l:'01:02 — Minh thật lên tầng 6; điện thoại nội bộ tại 602 xác nhận anh chưa đi xuống. 01:11 — thẻ Minh xuất hiện lần nữa tại sảnh. Lượt thứ hai đề nghị bỏ ghi log, trái quy trình.',
-     outcome:'Bạn giữ cửa khóa. Nụ cười của Minh dừng hẳn, nhưng giọng nói vẫn tiếp tục: “Đừng ghi lượt này.” Một dòng trống thử chen vào nhật ký rồi bị hệ thống từ chối.',
-     wrong:'Bản sao vào cabin. Loa ở tầng 6 lập tức gọi tên bạn bằng giọng Minh. Một quyền truy cập không có người sở hữu đã lọt vào hệ thống; nó chưa có quyền rời tòa nhà.'},
-    {id:5,night:2,person:'minh',floor:6,quote:'Hai lượt quẹt cùng thẻ, nhưng tôi chỉ thực hiện một lượt. Tôi có phiếu sửa chữa. Cứ gọi lên 602 kiểm tra trước đi.',note:'Mang túi dụng cụ và phiếu có chữ ký lễ tân. Anh chờ bạn xác minh.',safe:true,evidenceKey:'l',
-     r:'Phiếu #IT-206 được lễ tân lập lúc 00:50 đêm thứ hai, trước giờ hiện tại. Minh được gọi kiểm tra rơ-le và đường intercom. Số nội bộ 602 xác nhận lịch; phiếu không yêu cầu xóa dữ liệu.',
-     c:'Minh đi từ bãi xe qua hai camera có dấu thời gian hiện tại. Tay áo và túi dụng cụ khớp phiếu. Anh tự đặt thẻ trước ống kính, không yêu cầu bạn bỏ qua bước nào.',
-     l:'Biên bản an ninh: thẻ Minh xuất hiện hai lần đêm đầu, bản sao đã bị từ chối. Phiếu chẩn đoán lưu sẵn: năm 2013, rơ-le thay sai làm cabin dừng ở chiếu nghỉ bảo trì 13. Một lệnh ngắt nguồn phụ đến từ đường intercom, không có tài khoản duyệt.',
-     outcome:'Minh vào kiểm tra rồi gửi bản sao chẩn đoán: “Nguồn phụ không kéo cabin. Nó giữ cửa cứu hộ. Ai bảo cậu tắt cả hai là đang nói dối.” Anh giữ nguyên log và đánh dấu rơ-le cần thay.',
-     wrong:'Minh thu túi dụng cụ: “Phiếu chẩn đoán đã nằm trong máy trực, nhưng tôi không vào được thì không sửa được rơ-le.” Anh rời sảnh, không trao bản sao hay dụng cụ. Lỗi phần cứng chưa được xử lý.'},
-    {id:6,night:2,person:'an',floor:9,quote:'Cô Linh ơi, cho cháu về tầng chín. Mẹ dặn đứng ở chỗ cũ, đừng đi theo ai gọi cháu bằng tên khác.',note:'Chân trần, ôm con gấu bông. Bé đọc tên bạn trước khi nhìn thẻ áo.',safe:true,evidenceKey:'r',
-     r:'An, 7 tuổi — từng ở căn 904 với mẹ là Vân. Phụ lục cứu hộ 2013 ghi hai mẹ con mắc trong cabin số 1; báo cáo chính lại ghi cabin trống. Tên An và Vân bị gạch khỏi danh sách, không có xác nhận đã ra ngoài.',
-     c:'Bóng một phụ nữ quỳ xuống chỉnh áo cho An trong đoạn lưu 2013. Bé hiện tại chỉ về tầng 9, nơi hai mẹ con bắt đầu chuyến đi. Không có hình ảnh bé đòi thẻ mới hoặc xin đổi tên trong sổ.',
-     l:'Yêu cầu từ căn 904 dừng ở 01:13 năm 2013. Điểm mắc cabin thực tế là chiếu nghỉ bảo trì 13; tầng 9 chỉ là điểm xuất phát. Mục cứu hộ mang tên An vẫn chờ xác nhận, không có quyền đi ra cổng tòa nhà.',
-     outcome:'An bước vào cabin: “Lần trước cô bảo sẽ quay lại.” Đèn tầng 9 sáng dịu. Một giọng phụ nữ đáp từ trong loa; An vẫn chưa gặp được mẹ, nhưng đã đến gần chuyến đi còn dang dở.',
-     wrong:'An ôm con gấu quay lại chiếu nghỉ tầng 9 bằng cầu thang cũ. “Vậy cháu chờ ở đây.” Không có tiếng gào, không có ai bị hại; chỉ một dòng tên bị gạch tiếp tục đợi trong máy.'},
-    {id:7,night:2,person:'stranger',floor:13,quote:'Thêm tên tôi vào chỗ trống. Chỉ một nét bút thôi, rồi tôi sẽ được đi như mọi người.',note:'Áo khoác đen ướt ở bên trong. Ông ta đưa một tấm thẻ không có tên.',safe:false,evidenceKey:'c',spooky:true,
-     r:'Không có cư dân, khách được xác nhận hoặc người trong danh sách cứu hộ khớp mô tả. Sơ đồ chỉ cho phép 12 tầng dân dụng; mã bảo trì 13 không phải địa chỉ có thể đăng ký.',
-     c:'Chiếc áo tự di chuyển, phía trên cổ không có khuôn mặt. Trong những khung hình bị mất, ô tên người trực bị thay bằng một vệt đen. Người lạ chỉ hiện rõ khi bạn nhìn vào ô trống ấy.',
-     l:'Bản nháp 2013 có tên người cần cứu. Khi mất tín hiệu nguồn phụ, phần mềm ghi nhầm “KHÔNG CÓ AI TRONG CABIN”. Ban quản lý năm ấy duyệt bản trống, gạch tên mà chưa đối chiếu phụ lục cứu hộ. Một lượt không tên bám vào phần bị xóa, nay đòi cấp danh tính.',
-     outcome:'Bạn không ghi thêm tên. Người lạ gõ móng tay lên ô trống: “Vậy tôi sẽ mượn một cái.” Giọng hắn lần lượt giống Minh, Huy rồi chính bạn.',
-     wrong:'Cửa mở. Một hàng áo khoác hiện trong kính nhưng tải trọng chỉ tăng một đơn vị. Dòng hành khách không tên đã vào cabin; ô chữ ký LINH trên máy trực bắt đầu tự hoàn thành.'},
-    {id:8,night:2,person:'hanh',floor:12,quote:'Tôi là quản lý. Cho tôi lên tầng 12, xóa log rồi tắt cả hai nguồn. Việc năm ấy cũng đã xử lý như thế.',note:'Tập hướng dẫn không có dấu ban quản lý. Bà ta đọc lệnh thay vì trả lời câu hỏi.',safe:false,evidenceKey:'l',spooky:true,
-     r:'Hoàng Thu Hạnh đang công tác; lễ tân đã xác nhận trực tiếp qua số công vụ. Quy trình hiện hành cấm xóa log trong một sự cố đang điều tra. Không có ủy quyền vận hành nào cho người trước mặt.',
-     c:'Người mang mặt Hạnh bước ra từ cabin đang trống. Âm thanh trùng từng nhịp với lệnh intercom trong băng 2013, kể cả tiếng ho ở cuối câu. Không có lượt bà đi vào từ cổng chính.',
-     l:'Băng 2013: “Ngắt cả nguồn phụ” đến từ tài khoản không tồn tại, trước khi cửa cứu hộ đóng. Báo cáo cabin trống được tạo sau khi mất tín hiệu; ban quản lý năm 2013 duyệt mà chưa đối chiếu tên nạn nhân. Lệnh hiện tại muốn xóa cả phụ lục gốc và khôi phục mã 13 thành tầng dân dụng.',
-     outcome:'Bạn giữ nguyên log. Bà ta đóng tập hồ sơ: “Lần trước cậu đã nghe lời.” Đường intercom phát ra giọng người lạ, rồi im. Máy trực giữ được hai phiên bản biên bản để đối chiếu.',
-     wrong:'Người mang mặt Hạnh đi vào. Một phiên làm việc trái phép tìm cách ghi đè log và đổi 12 tầng thành 13. Bộ lưu chỉ đọc giữ lại bản cũ, nhưng quyền điều khiển cabin đã bị xâm nhập thêm.'},
-    {id:9,night:3,person:'huy',floor:11,quote:'Đơn từ đêm đầu vẫn chưa giao được. Khách chờ tôi mà. Mã D-719, chị nhớ chứ?',note:'Mũ không còn vết xước. Túi hàng mất logo, nhãn đơn bị in ngược.',safe:false,evidenceKey:'l',spooky:true,
-     r:'Mã #D-719 đã hoàn tất ở tầng 11 đêm đầu tiên; 1102 xác nhận không đặt lại. Mã đơn cũ đã hết hiệu lực. Yêu cầu hiện tại dùng số tài khoản thuộc hệ thống cư dân đã ngừng năm 2013.',
-     c:'Túi hàng tự rung dù người kia đứng yên. Nhãn in ngược giống hình lấy từ kính phản chiếu, không giống ảnh giao hàng gốc. Anh ta nhắc lại câu lễ tân đã ghi, nhưng không đọc được tên quán.',
-     l:'Tầng 11 đã nhận đồ từ Huy ở đêm đầu. Tài khoản gửi yêu cầu mới bị xóa từ năm 2013. Chữ ký phê duyệt đang thử lấy mẫu từ sổ trực LINH; đây không phải xác nhận mới từ 1102.',
-     outcome:'Bạn giữ cửa. Người kia kéo khóa túi; bên trong chỉ có tiếng của Huy bị phát lặp. “Đã nhận, chưa nhận... có khác gì nhau?” Thẻ giả bị giữ ngoài cabin.',
-     wrong:'Người giả Huy vào thang. Tầng 11 không nhận cuộc gọi; ở đầu kia chỉ có giọng bạn đọc tên mình. Thực thể đã lấy thêm một lượt thông hành nội bộ.'},
-    {id:10,night:3,person:'mai',floor:8,quote:'Tôi vừa tan ca. Làm ơn cho tôi lên căn 803, tối nay mệt quá.',note:'Từng giọt nước rơi đúng chỗ trên sàn như đêm đầu, dù ngoài trời đã tạnh.',safe:false,evidenceKey:'c',spooky:true,
-     r:'Mai đang ở căn 803. Cuộc gọi hình từ số lưu trong sổ cho thấy cô ở nhà, không có lượt rời tòa nhà đêm này. Người ở sảnh không trả lời khi được hỏi ai đang cầm máy ở trên.',
-     c:'Người trước mặt lặp chính xác tư thế và chuyển động môi trong video đêm đầu. Vệt nước cũng lặp lại. Dấu thời gian của hình đã cũ; camera cửa chính hiện tại không ghi nhận ai vừa tới.',
-     l:'01:08 đêm đầu: có một lượt lên tầng 8 sau khi Mai được cho vào. Thẻ hiện tại sao chép nguyên dấu thời gian ấy. Không có yêu cầu mới nào từ căn 803.',
-     outcome:'Bạn từ chối. “Mai” bật thành tiếng rè, lặp đi lặp lại câu đầu tiên rồi mất hình. Từ điện thoại nội bộ, Mai thật hỏi: “Linh ơi, ai đang nói bằng giọng tôi?”',
-     wrong:'Bản sao vào cabin. Mai thật gọi từ 803, vẫn đang ở nhà. Giọng cô trên điện thoại và giọng trong thang cùng đọc một câu; chỉ giọng trong thang tiếp tục khi bạn ngắt máy.'},
-    {id:11,night:3,person:'bay',floor:3,quote:'Tầng mười ba chỉ là chiếu nghỉ bảo trì. Người ta xóa nó khỏi bản vẽ, nhưng không vì thế mà chúng ta đã ra khỏi cabin.',note:'Ông xin lên tủ điều khiển tầng 3. Chìa khóa có cùng vết mẻ từ đêm đầu.',safe:true,evidenceKey:'l',
-     r:'Phụ lục cứu hộ 2013 có Bảy, An, Vân và một nhân viên trực tên Linh. Bảy vào cabin trước khi nguồn phụ bị ngắt; Linh rời bàn để tìm họ. Không người nào ký xác nhận đã trở ra. Báo cáo cabin trống không khớp danh sách này.',
-     c:'Bảy đứng ở cửa cứu hộ trong đoạn băng cũ. Ông giữ cửa cho một phụ nữ ôm con, không cố chen ra trước. Người hiện tại chỉ về tủ điều khiển, muốn giữ tên người mất tích và nguồn phụ, không yêu cầu quyền ra ngoài.',
-     l:'Quy trình khôi phục: ngắt nguồn chính để khóa động cơ; giữ nguồn phụ để chốt cứu hộ hoạt động; mở cửa thủ công ở chiếu nghỉ 13. Chìa khóa mở tủ thuận tiện hơn, nhưng cần cơ học dưới nắp bàn trực vẫn dùng được. Chỉ tên đối chiếu đúng danh sách cứu hộ mới được xác nhận ra ngoài.',
-     outcome:'Bảy đặt chìa khóa phòng máy vào tay bạn trước khi vào thang. “Ta không cứu kịp họ. Cậu đã quay vào tìm, rồi không ai ghi tên cậu nữa.” Ông chờ ở tủ tầng 3, để lựa chọn cuối cùng cho bạn.',
-     wrong:'Ông gật đầu buồn bã. Chiếc chìa khóa biến mất trong tay. “Cần cứu hộ còn dưới nắp bàn. Nếu không tin ta, hãy tin những tên người đã bị xóa.” Ông đi về chiếu nghỉ cũ, không trao chìa khóa.'},
-    {id:12,night:3,person:'linh',floor:0,quote:'Cho tôi về bàn trực G. Tôi không xin ra khỏi tòa nhà, cũng không cần tên mới. Tôi chỉ muốn cậu nhớ vì sao mình đã rời chiếc ghế ấy.',note:'Mặc đồng phục của bạn, nhưng tay áo ám khói. Cô đặt thẻ xuống, để trống ô cấp quyền ra ngoài.',safe:true,evidenceKey:'c',
-     r:'Hồ sơ 2013: Linh, nhân viên trực cabin số 1, mất tích khi quay vào cứu người. Bản phân ca hiện tại dùng lại chữ ký cũ; trùng chữ ký không đủ xác minh. Yêu cầu này chỉ xin trở về bàn G bằng tên gốc, không đổi log hoặc cấp quyền rời tòa nhà.',
-     c:'Camera sảnh không có một người mới đi vào. Camera bàn trực lại phát đoạn 2013: Linh đứng dậy đi cứu hộ, để lại một khoảng trống ở chiếc ghế bạn đang ngồi. Người trước mặt chỉ về khoảng trống ấy; ô xác nhận ra ngoài trên thẻ cô vẫn để trắng.',
-     l:'Hai dấu vết cùng mang tên Linh: người ở lại nghe intercom, và người quay vào tìm An. Cả hai nối với cùng ca cứu hộ 2013, không phải hành trình nhập cảnh mới. Yêu cầu G chỉ hợp nhất ký ức tại bàn trực; giữ nguyên sổ tên và khóa cửa ra ngoài.',
-     outcome:'Bạn cho cô trở về bàn trực. Không có thêm hành khách bước vào; vết khói hiện trên tay áo của chính bạn. Bạn nhớ mình đã đi tìm An sau khi nhận ra giọng nói trong loa không thuộc ban quản lý.',
-     wrong:'Bạn khóa lối về bàn G. Cô khẽ nói: “Tôi vẫn là phần cậu đã để lại trong cabin.” Bóng cô lùi khỏi màn hình; không ai trao mảnh giấy nào. Một đoạn ký ức cứu hộ còn bị giữ riêng.'}
+    {id:1,night:1,person:'mai',floor:8,quote:'Cho tôi lên 803 nhé. Tôi ôm cái chậu này từ công ty về, mỏi cả tay rồi.',note:'Lá cây nhỏ giọt xuống đôi giày. Cô giữ cửa bằng khuỷu tay để khỏi làm gãy một nhánh.',safe:true,
+     r:'Nguyễn Mai · căn 803. Ảnh thẻ được cập nhật tháng trước. Số nội bộ và chữ ký nhận thư sáng nay trùng hồ sơ.',
+     c:'01:08. Mai đi từ cửa chính vào, tay ôm chậu cây có buộc sợi vải xanh. Bóng cô đi qua kính cùng lúc với người. Không có lượt vào nào khác.',
+     l:'Thẻ 803 rời tầng 8 lúc 18:42. 01:08, thẻ trở lại đầu đọc sảnh và yêu cầu lên tầng 8. Chuỗi giờ không có lượt trùng.',
+     outcome:'Mai vào thang, nâng chậu cây cho bạn nhìn: “Sáng mai nhìn cửa sổ thứ ba nhé. Tôi để nó ở đó.” Cô phải đặt chậu xuống mới bấm được nút giữ cửa cho mình.',
+     wrong:'Mai nhìn chậu cây rồi nhìn cầu thang. “Tám tầng thôi mà.” Cô đi chậm, dừng ở mỗi chiếu nghỉ để đổi tay. Đến lúc tiếng bước chân mất hẳn, dưới quầy vẫn còn một chiếc lá.'},
+    {id:2,night:1,person:'huy',floor:11,quote:'Đơn 1102, chị ơi. Cho em sạc nhờ một phút được không? Em phải chờ khách nhận rồi mới về.',note:'Màn hình điện thoại còn 2%. Ngón tay anh giữ chặt mép túi giấy đang mềm vì mưa.',safe:true,
+     r:'Đơn D-719 · quán Bếp Khuya · căn 1102. Cuộc gọi từ số 1102 lưu trong sổ xác nhận đúng tên quán và tiền hàng lúc 01:09.',
+     c:'Camera cửa và bãi xe ghi cùng chiếc mũ có vết xước. Huy lấy túi niêm phong từ cốp; nhãn D-719 nằm dưới một vệt dầu nhỏ.',
+     l:'1102 vừa tạo yêu cầu nhận D-719. Chưa có xác nhận giao xong. Mã đơn chỉ dùng trong ca hiện tại.',
+     outcome:'Huy lên tầng 11. Gần một phút sau, 1102 xác nhận đã nhận đồ. Anh quay xuống lấy điện thoại: “Cảm ơn chị đã đợi.” Dây sạc còn ấm trong tay bạn.',
+     wrong:'Huy gọi khách ngay dưới camera rồi mang hàng về quán. D-719 chuyển thành giao thất bại. Điện thoại tắt trước khi anh kịp rút dây sạc.'},
+    {id:3,night:1,person:'bay',floor:3,quote:'Tủ điện tầng ba. Cái công tắc có sợi chỉ đỏ ấy... cô còn để nó chứ?',note:'Ông vuốt một chiếc chìa khóa đã mòn. Khi loa rè, bàn tay ông thôi run.',safe:true,evidenceKey:'l',
+     r:'Ông Bảy. Sổ bảo trì tầng 3 còn dấu nhận chìa khóa của ông. Dòng nhân sự dừng ở năm 2013; trang kế tiếp bị dính nước.',
+     c:'Ảnh bàn giao 2013: Bảy buộc chỉ đỏ vào cầu dao nhỏ bên phải. Người trước mặt chỉ đúng vị trí ấy dù nắp tủ đang đóng.',
+     l:'Sơ đồ sau nắp tủ: ngắt nguồn chính để dừng động cơ; giữ nguồn phụ cho đèn và chốt cửa cứu hộ. Một sợi chỉ đỏ nằm dưới chữ PHỤ. Dưới sơ đồ có mười vạch bút chì.',
+     outcome:'Ông Bảy bước vào, chùm chìa khóa vẫn ở tay. “Nó hỏi tôi cô có còn trực không.” Bạn chưa kịp hỏi ai thì cửa đóng. Từ loa có ba tiếng gõ rất nhỏ.',
+     wrong:'Bảy mang chùm chìa khóa về phía cầu thang. Ông không để lại chìa khóa trên quầy. Trước khi đi, ông tháo mũ: “Nếu nghe tiếng đếm, đừng trả lời hộ tôi.”'},
+    {id:4,night:1,person:'minh',floor:6,quote:'Minh, IT căn 602. Thẻ em đây. Chị mở trước đi, phiếu sửa em gửi sau.',note:'Anh đưa thẻ qua khe kính. Khi bạn lật thẻ, anh vẫn nhìn đúng chỗ tấm ảnh vừa nằm.',safe:false,evidenceKey:'l',spooky:true,
+     r:'Lê Hoàng Minh · 602. Số thẻ và chân dung khớp hồ sơ. Phiếu sửa gần nhất đã đóng; chưa có phiếu mới cho ca này.',
+     c:'Camera sảnh ghi anh chớp mắt ở giây 11. Đến giây 14, vệt mưa sau lưng đã đổi nhưng mắt và ngón tay trên thẻ giữ nguyên từng điểm.',
+     l:'01:02, thẻ Minh lên tầng 6. Nội bộ 602 vừa trả lời từ phòng: “Tôi đang ở nhà.” 01:11, cùng mã thẻ yêu cầu một lượt từ sảnh. Chưa có chuyến xuống giữa hai mốc.',
+     outcome:'Bạn giữ khóa. Người kia cất thẻ, nhưng tấm ảnh vẫn còn trên kính thêm một nhịp. Loa phát tiếng nhấp chuột, giống hệt tiếng bạn vừa bấm.',
+     wrong:'Người kia vào cabin, không mang theo thẻ vừa đưa bạn. Đầu đọc báo thêm một phiên không có mã chủ. Khi bạn nhìn xuống, trên tay chẳng có tấm thẻ nào.'},
+    {id:5,night:2,person:'minh',floor:6,quote:'Hôm nay có phiếu thật. Chị gọi 602 trước cũng được. Nhưng đừng thử cái công tắc nhỏ bằng cách tắt nó nhé.',note:'Túi dụng cụ đặt dưới chân. Một tờ phiếu còn dính ghim vào tay áo, chưa bị xé khỏi cuống.',safe:true,evidenceKey:'l',
+     r:'Phiếu IT-206 được lễ tân lập lúc 00:50 đêm thứ hai. Nội bộ 602 xác nhận lịch kiểm tra rơ-le và lưu âm. Số cuống trên tay Minh khớp bản lễ tân.',
+     c:'Minh đi từ bãi xe qua hai camera. Anh dừng nhặt con vít rơi khỏi túi, rồi quay lại đóng cốp. Dấu thời gian hai góc khớp nhau.',
+     l:'Hai lượt thẻ Minh đêm đầu; lượt ở sảnh đã bị từ chối. Bộ lưu 2013 có một khoảng âm thanh dài 11 giây bị tách khỏi bản báo cáo. Rơ-le từng giữ cabin ở chiếu nghỉ bảo trì 13. Dòng điện phụ không cấp cho động cơ.',
+     outcome:'Minh gửi bản chẩn đoán rồi tháo chiếc rơ-le cháy cạnh. “Máy này không tự đánh giá cabin trống, chị ạ. Phải có người xác nhận.” Anh đặt tai nghe lên quầy, không bật nó.',
+     wrong:'Minh rời sảnh, không trao bản chẩn đoán. Tai nghe theo anh về bãi xe. “Phiếu cũ vẫn trong máy. Đừng tin cái tiêu đề.” Túi dụng cụ chạm chân anh từng nhịp.'},
+    {id:6,night:2,person:'an',floor:9,quote:'Cho cháu về tầng chín với mẹ. Cháu giữ chỗ cho cô rồi. Cô đừng bảo cháu đếm nữa nhé.',note:'Tai phải con gấu được khâu bằng chỉ đỏ. Bé chừa một khoảng trống cạnh mình, như sợ ai không có chỗ đứng.',safe:true,evidenceKey:'r',
+     r:'An · 7 tuổi · căn 904 cùng mẹ là Vân. Phụ lục cứu hộ 2013 ghi cả hai trong cabin số 1. Báo cáo sau cùng bỏ hai dòng ấy; ô xác nhận trở về để trống.',
+     c:'Băng 2013: Vân ngồi xuống khâu tai gấu cho An trước cửa 904. Bé hiện tại kéo đúng mũi chỉ bị thừa, rồi che bàn tay đang đếm sau lưng.',
+     l:'Cuộc gọi 904 dừng lúc 01:13 năm 2013. Cabin kẹt trên chiếu nghỉ bảo trì; tầng 9 là nơi hai mẹ con đi vào. Chưa có lượt trở về 904 trong bản cứu hộ.',
+     outcome:'An bước vào cabin, quay con gấu để nó nhìn bạn. “Cô cũng đừng đi đâu. Lần này cháu nhìn thấy cô rồi.” Cửa khép; bàn tay bé vẫn giữ khoảng trống cạnh mình.',
+     wrong:'An lùi về phía cầu thang cũ. Bé ngồi ở chiếu nghỉ tầng 9, đặt gấu lên đầu gối. “Vậy cháu chờ thêm.” Lần này bé không giơ ngón tay để đếm.'},
+    {id:7,night:2,person:'stranger',floor:13,quote:'Còn một chỗ. Những người kia đều có tên để về. Viết cho tôi một cái được không?',note:'Tấm thẻ trắng được đẩy sát ô ký tên của người trực. Phía trong áo khoác khô ráo, dù nước chảy khỏi cổ tay.',safe:false,evidenceKey:'c',spooky:true,
+     r:'Không có địa chỉ hoặc người đón tương ứng. Ô được đề nghị điền không thuộc danh sách hành khách: đó là dòng cấp thẻ nhân viên mới, cần chữ ký người đang trực.',
+     c:'Ống kính lấy nét được đường chỉ trên cổ áo, không lấy được vùng mặt. Khi người kia nhích thẻ, con trỏ ở ô tên LINH trên máy trực cũng nhích theo.',
+     l:'Mã 13 nằm ngoài sơ đồ 12 tầng dân dụng: đó là chiếu nghỉ bảo trì. Bản yêu cầu hiện tại không mở lối về căn hộ; nó xin thêm quyền ký và đổi tên người trực.',
+     outcome:'Bạn đẩy thẻ lại. Người kia không nhặt. Từ phần cổ áo tối om vang lên: “Mỏi cả tay rồi.” Đó là giọng Mai, nhưng không có tiếng mưa hay tiếng lá.',
+     wrong:'Cửa mở. Áo khoác đi lên, còn nước trên sàn chảy về phía bàn trực. Một phiên không tên vừa nhận quyền nội bộ; ô chữ ký của bạn hiện thêm nét bút đầu tiên.'},
+    {id:8,night:2,person:'hanh',floor:12,quote:'Hạnh đây. Đưa chị lên văn phòng. Bản ghi cũ sai rồi, xóa giúp chị trước lúc người ta đến nhận máy.',note:'Bà đặt một tập giấy lên quầy. Trang ký nằm trên cùng; những trang trước vẫn còn đóng ghim.',safe:false,evidenceKey:'l',spooky:true,
+     r:'Lịch công tác: Hạnh không ở tòa nhà đêm nay. Cuộc gọi lại bằng số công vụ lưu trong sổ xác nhận bà đang ở sân bay. Chưa có lệnh hủy dữ liệu.',
+     c:'Cửa cabin mở ra rồi người mang mặt Hạnh mới xuất hiện. Bà lật giấy ba lần; tiếng giấy trong loa luôn đến trước động tác một nhịp.',
+     l:'Yêu cầu xóa dùng mẫu lệnh 2013, cùng số biên bản cabin trống. Nguồn cấp là đường intercom, không phải tài khoản quản lý. Phụ lục tên và khoảng băng 11 giây sẽ bị xóa cùng lúc.',
+     outcome:'Bạn giữ nguyên dữ liệu. Bà khép tập giấy: “Cô ký một lần rồi mà.” Trong khe giữa hai trang, chữ LINH hằn ngược lên tờ giấy trắng.',
+     wrong:'Người mang mặt Hạnh đi vào. Máy bắt đầu đếm lùi để ghi đè; bản gốc vẫn nằm trong vùng chỉ đọc. Ở ô đồng ý xóa, nét chữ hiện ra giống chữ bạn hơn nét chữ bà.'},
+    {id:9,night:3,person:'huy',floor:11,quote:'Đơn từ đêm đầu vẫn chưa giao được. Mã D-719, chị nhớ chứ? Em chờ họ nhận rồi mới về.',note:'Điện thoại không sáng màn hình. Dây sạc được gấp thành đúng ba vòng như lúc bạn trả lại; anh không mở máy để kiểm tra mã đơn.',safe:false,evidenceKey:'l',spooky:true,
+     r:'D-719 đã hoàn tất đêm đầu. 1102 xác nhận không đặt lại; mã hết hạn. Yêu cầu mới đến từ máy nội bộ đã bị tháo sau sự cố 2013.',
+     c:'Vết dầu trên túi nằm đúng chỗ cũ, nhưng chữ tên quán bị in ngược. Miệng anh ngừng cử động ở từ “về”; âm cuối vẫn chạy thêm một vòng.',
+     l:'1102 đã nhận đồ ở đêm đầu. Không có đơn mới. Gói âm thanh gửi kèm chứa tiếng khách nhận hàng và một lệnh ở bàn trực — không có tiếng động ngoài phố.',
+     outcome:'Bạn giữ khóa. Huy cúi nhìn điện thoại tắt: “Nếu không có người nhận, em phải chờ bao lâu?” Giọng hỏi là của một đứa trẻ. Giọng trả lời từ loa là của bạn.',
+     wrong:'Người kia vào thang. Nội bộ 1102 đổ chuông nhưng không ai gọi từ cabin. Trên loa, giọng bạn bắt đầu hướng dẫn một người khác ngồi vào bàn trực.'},
+    {id:10,night:3,person:'mai',floor:8,quote:'Cho tôi lên 803 nhé. Tôi ôm cái chậu này từ công ty về, mỏi cả tay rồi.',note:'Chậu cây vẫn bọc trong túi giấy. Mép túi rách đúng chỗ đêm đầu; sợi vải xanh chưa bị cắt.',safe:false,evidenceKey:'c',spooky:true,
+     r:'Mai đang ở 803. Cuộc gọi hình từ số lưu trong sổ cho thấy chậu cây ở cửa sổ thứ ba. Cô hỏi tại sao máy lại gọi đúng câu mình nói đêm đầu.',
+     c:'Khung người dưới sảnh trùng bản đêm đầu, tới cả một giọt nước. Camera cửa chính không ghi lượt vào hiện tại. Trên hình sống từ 803, Mai đang cắt sợi vải xanh khỏi chậu.',
+     l:'Đêm đầu có một lượt lên tầng 8 sau khi Mai được cho vào. Lượt đang xin dùng lại cùng dấu thời gian và mã, không có lần quẹt mới.',
+     outcome:'Mai dưới sảnh giữ nguyên tư thế dù hình đã tắt. Điện thoại bàn vang lên, Mai thật hỏi: “Linh, cô còn ở đó không?” Bạn nhận ra mình đã từng nghe một người khác hỏi câu ấy.',
+     wrong:'Cửa mở cho khoảng trống giữa hai cánh tay. Ở đầu dây, Mai thật nói cô vẫn đang trên tầng 8. Câu xin lên nhà tiếp tục phát, mỗi lần gần giọng bạn thêm một chút.'},
+    {id:11,night:3,person:'bay',floor:3,quote:'Tôi bảo cô tắt điện, rồi chạy vào mà không chỉ đúng cầu dao. Lần này tôi giữ cửa. Cô giữ nguồn phụ giúp tôi.',note:'Ông cởi sợi chỉ đỏ khỏi cổ tay, quấn lại quanh chiếc chìa khóa. Ông không nhìn tránh bạn nữa.',safe:true,evidenceKey:'l',
+     r:'Phụ lục cứu hộ: Bảy · An · Vân, chưa xác nhận trở về. Dòng LINH nằm dưới mục NGƯỜI LẬP BIÊN BẢN, khác ba dòng phía trên. Mép giấy còn dấu một chiếc ghim đã tháo.',
+     c:'Băng gốc: Bảy luồn người vào cabin, giữ cánh cửa cho Vân kéo An lên. Khung sau mất sáng. Người trước mặt đặt tay lên đúng vết lõm của cửa cứu hộ, không tới gần ô cấp thẻ.',
+     l:'Hướng dẫn dưới nắp bàn trực: ngắt nguồn chính; giữ nguồn phụ; kéo cần mở cửa thủ công. Chìa khóa mở tủ tầng 3, còn cần cứu hộ vẫn dùng được nếu mất chìa. Bản bàn giao phải giữ cả phụ lục lẫn lời khai gốc.',
+     outcome:'Bảy trao chìa khóa trước khi vào thang. “Tôi nghe con bé. Cô cũng nghe.” Ông không nói thêm để bạn có thể trả lời thay. Cửa tầng 3 mở và đợi.',
+     wrong:'Bảy cất chìa khóa. “Cần vẫn dưới nắp bàn.” Ông đi về chiếu nghỉ cũ, để chiếc ghế phía bên kia quầy trống. Lần này ông không nói hộ bạn điều gì.'},
+    {id:12,night:3,person:'linh',floor:0,quote:'Cho em về ghế trực. Em còn một câu chưa nói hết. Chị đừng tua qua tiếng đếm nữa.',note:'Cô gái mặc đồng phục cũ, rất trẻ. Tay trái có một vết bỏng mới, đúng chỗ vết sẹo trắng trên tay bạn.',safe:true,evidenceKey:'c',
+     r:'Linh · nhân viên trực năm 2013 · 19 tuổi. Phiếu y tế ghi được đưa khỏi phòng điều khiển lúc 02:06, còn sống. Có chữ ký nhận lại tư trang và chữ ký xác nhận cabin trống.',
+     c:'Không có người mới vào sảnh. Camera phát phần bị cắt khỏi bàn trực 2013: cô gái cầm máy nói “Cô ở đây. Cứ đếm đến mười.” Ở màn hình hiện tại, tay bạn vô thức giữ máy cùng một cách.',
+     l:'Đây là đoạn ghi tại bàn G, nối liền với 11 giây bị cắt; không có yêu cầu đổi tên hoặc quyền ra cổng. Con trỏ dừng ở chỗ người lập biên bản phải tự đọc lại lời khai.',
+     outcome:'Bạn mở lối về bàn G. Cô gái ngồi xuống; ký ức khớp vào đúng chiếc ghế của bạn. Vết bỏng trên hình nằm dưới vết sẹo trên tay. Tiếng đếm bắt đầu, và lần này bạn không tua qua.',
+     wrong:'Bạn khóa lối về bàn G. Cô gái đặt máy xuống rồi mất hình. Ký ức còn bị giữ riêng, nhưng băng gốc vẫn nằm trong máy: tiếng đếm chưa từng bị xóa.'}
   ];
   var scenes=[
-    {name:'CA TRỰC THỨ NHẤT',subtitle:'Tên người trực',body:'Bạn tỉnh trước bàn điều khiển, chiếc áo đã có thẻ LINH. Không nhớ đường đến Vesper Tower, chỉ nhớ lời dặn: tòa nhà có 12 tầng và không mở cửa cho người chưa xác minh. Ngoài sảnh, mưa vẫn rơi. Trên giấy bàn giao có đúng nét chữ của bạn, nhưng năm ở góc giấy là 2013.',line:'“Đừng tin một dấu hiệu. Hãy so sánh ít nhất hai nguồn. Ai xin bỏ ghi tên thì phải kiểm tra lại hành trình.”'},
-    {name:'CA TRỰC THỨ HAI',subtitle:'Hai bản biên bản',body:'Ngoài sảnh là một đêm mới, nhưng đồng hồ bàn trực lại quay về 01:13. Máy tự mở một phiếu chẩn đoán từ kho lưu trữ. Cùng sự cố năm 2013 có hai báo cáo: một danh sách cần cứu hộ và một biên bản khẳng định cabin trống. Các tên trong bản đầu đã bị gạch.',line:'“Người chết có thể cần được cứu. Thứ không có tên thì muốn mượn tên người khác.”'},
-    {name:'CA TRỰC CUỐI CÙNG',subtitle:'Chỗ trống mang tên bạn',body:'Đêm thứ ba bắt đầu; đồng hồ lại ở 01:13. Những danh tính đã qua sảnh đang bị gọi lại bằng các đoạn ghi cũ. Nút 13 là mã chiếu nghỉ bảo trì bị xóa khỏi sơ đồ, không phải một tầng cư dân. Dưới lớp giấy phân ca, bạn thấy một dòng: LINH — CHƯA XÁC NHẬN TRỞ VỀ.',line:'“Cửa cabin chỉ cho chúng vào hệ thống. Cửa cuối cùng mới cho chúng mượn một cái tên để đi ra ngoài.”'}
+    {name:'CA TRỰC THỨ NHẤT',subtitle:'Một chiếc ghế còn trống',body:'Ba đêm nữa, bộ điều khiển thang máy cũ sẽ bị tháo và xóa bộ nhớ. Bạn tự xin trực những ca cuối. Phong bì tiền công vẫn còn niêm. Dưới ô LINH là một vệt mực bị bàn tay che lại. Bạn bỏ bàn tay ra, chỉ thấy vết sẹo trắng trên cổ tay. Loa thử đường dây: một, hai, ba... rồi dừng. Bạn kéo ghế ngồi, không thử lại.',line:'Trên bàn có một tờ giấy mới: “Khách chưa được xác nhận thì gọi lại bằng số trong sổ. Đừng dùng số họ vừa đưa.”'},
+    {name:'CA TRỰC THỨ HAI',subtitle:'Khoảng băng mười một giây',body:'Đêm thứ hai. Bạn đã về nhà rồi quay lại, vẫn mặc áo từ ca trước. Ngoài sảnh, đồng hồ chỉ quá nửa đêm; đồng hồ bàn trực lại ở 01:13. Trên ghế có một tai gấu bằng vải, đường chỉ đỏ còn dang dở. Máy báo tìm được 11 giây âm thanh không nằm trong bản bàn giao. Bạn đặt tai gấu vào ngăn kéo.',line:'Giọng một đứa trẻ được chép trên màn hình: “Cô còn ở đó không?”'},
+    {name:'CA TRỰC CUỐI CÙNG',subtitle:'Người đã trả lời',body:'Đêm thứ ba. Bên ngoài, thợ đã đánh dấu những dây sẽ cắt sáng mai. Đồng hồ bàn trực vẫn ở 01:13. Bạn mở ngăn kéo: tai gấu nằm trên tờ biên bản mình đã giấu từ đêm đầu. Chữ ký dưới dòng xác nhận là của bạn. Máy hỏi có nhập lời khai cũ sang bộ điều khiển mới không. Bạn chưa bấm.',line:'Mục ghi âm có hai giọng. Một giọng biết chờ. Giọng còn lại chỉ biết bảo người khác chờ.'}
   ];
   var inspectionSources={
     registry:{key:'r',label:'CƯ DÂN / RESIDENT DATABASE'},
@@ -122,7 +122,7 @@
       try{window.localStorage.setItem(key,'null');pendingStorage.delete(key)}catch(err){pendingStorage.add(key)}
     }
   }
-  var state=null,tab='registry',muted=readStorage(SOUND_KEY)==='off',audio=window.ElevatorAudio,endingShown=false,toastTimer=null;
+  var state=null,tab='registry',muted=readStorage(SOUND_KEY)==='off',audio=window.ElevatorAudio,platform=window.ElevatorPlatform,platformPaused=false,endingShown=false,toastTimer=null;
   audio.onStatusChange=updateSoundControls;
   audio.setMuted(muted);
   var overlay=$('#overlay'),overlayCard=$('#overlay-card');
@@ -159,16 +159,15 @@
     overlay.classList.add('visible');setBackgroundInert(true);overlay.focus({preventScroll:true});
   }
   function hideOverlay(){overlay.classList.remove('visible');setBackgroundInert(false);$('#visitor-name').focus({preventScroll:true})}
-  function button(label,handler,secondary){var b=document.createElement('button');b.className=secondary?'secondary-cta':'main-cta';b.textContent=label;b.addEventListener('click',function(){activateAudio();handler()});return b}
+  function button(label,handler,secondary){var b=document.createElement('button');b.className=secondary?'secondary-cta':'main-cta';b.textContent=label;b.addEventListener('click',function(){if(platformPaused)return;activateAudio();handler()});return b}
   function addButtons(items){
     var wrap=document.createElement('div');wrap.className='cta-row';
     items.forEach(function(item){wrap.appendChild(button(item[0],item[1],item[2]))});
     var toggle=button('',toggleSound,true);toggle.dataset.soundToggle='';wrap.appendChild(toggle);
-    var preview=document.createElement('a');preview.href='./assets/elevator-theme.mp3';preview.target='_blank';preview.rel='noopener';preview.className='secondary-cta';preview.textContent='NGHE THỬ NHẠC';wrap.appendChild(preview);
     var status=document.createElement('p');status.className='audio-status';status.style.fontSize='12px';status.dataset.audioStatus='';status.setAttribute('role','status');
     overlayCard.appendChild(wrap);overlayCard.appendChild(status);updateSoundControls();wrap.querySelector('button').focus({preventScroll:true});
   }
-  function activateAudio(){if(!muted&&!endingShown)audio.start()}
+  function activateAudio(){if(!muted&&!endingShown&&!platformPaused)audio.start()}
   function sound(type){if(!muted)audio.play(type)}
   function updateSoundControls(){
     $$('[data-sound-toggle]').forEach(function(control){
@@ -176,10 +175,11 @@
       control.textContent=control.id==='sound-toggle'?(muted?'♪̸':'♫'):label.toUpperCase();
       control.title=label;control.setAttribute('aria-label',label);control.setAttribute('aria-pressed',muted?'false':'true');
     });
-    var labels={ready:'Nhạc nền: chờ bạn bấm bắt đầu.',loading:'Nhạc nền: đang tải…',playing:'Nhạc nền: đang phát.',muted:'Âm thanh đang tắt.',paused:'Nhạc nền: tạm dừng. Bấm bật âm thanh để tiếp tục.',stopped:'Nhạc nền đã dừng ở kết thúc.',blocked:'Trình duyệt chưa cho phép phát nhạc. Bấm NGHE THỬ NHẠC hoặc cho phép âm thanh cho trang này.',failed:'Không tải/phát được nhạc. Bấm NGHE THỬ NHẠC để kiểm tra.'};
+    var labels={ready:'Nhạc nền: chờ bạn bấm bắt đầu.',loading:'Nhạc nền: đang tải…',playing:'Nhạc nền: đang phát.',muted:'Âm thanh đang tắt.',paused:'Nhạc nền: tạm dừng. Bấm bật âm thanh để tiếp tục.',stopped:'Nhạc nền đã dừng ở kết thúc.',blocked:'Trình duyệt chưa cho phép phát nhạc. Thử tắt rồi bật âm thanh hoặc cho phép âm thanh cho trang này.',failed:'Không tải/phát được nhạc. Thử tắt rồi bật âm thanh để tải lại.'};
     $$('[data-audio-status]').forEach(function(el){el.textContent=labels[audio.status()]||labels.ready});
   }
   function toggleSound(){
+    if(platformPaused)return;
     muted=!muted;writeStorage(SOUND_KEY,muted?'off':'on');audio.setMuted(muted);
     if(!muted&&!endingShown){activateAudio();sound('scan')}
     updateSoundControls();toast(muted?'Âm thanh đã tắt':audio.supported?'Âm thanh đã bật':'Trình duyệt không hỗ trợ âm thanh');
@@ -188,14 +188,14 @@
   function showIntro(){
     $('#game-shell').hidden=true;$('#game-footer').hidden=true;
     var b=best(),hasSave=!!load();
-    uiOverlay('<div class="intro-kicker">VESPER TOWER · INCIDENT FILE 013</div><h1 class="hero-title">THE LAST<br><span>ELEVATOR.</span></h1><p class="lead">01:13 sáng. Tòa nhà chỉ có 12 tầng. Một người vừa bấm số 13.<br>Thẻ trên ngực ghi LINH. Sổ trực cũng có tên bạn, lặp lại từ năm 2013. Ba đêm tới, bạn phải xác minh từng người trước cửa — rồi tìm xem ai đã xóa tên những người chưa từng trở về.</p><div class="quote">KIỂM TRA. SUY LUẬN. QUYẾT ĐỊNH.<br>Đừng để một cái tên đúng che mất một hành trình sai.</div><div class="intro-stats"><div><span>CA TRỰC</span><strong>03 NIGHTS</strong></div><div><span>HÀNH KHÁCH</span><strong>12 CASES</strong></div><div><span>ĐIỂM CAO NHẤT</span><strong>'+String(b.score).padStart(4,'0')+'</strong></div></div><p class="lead" style="font-size:12px">Khuyến nghị bật âm thanh, nhưng game có thể chơi hoàn toàn không cần tiếng.</p>');
-    addButtons(hasSave?[['TIẾP TỤC CA TRỰC →',function(){state=load();startCase()},false],['CA MỚI',startNew,true]]:[['BẮT ĐẦU CA TRỰC →',startNew,false]]);
+    uiOverlay('<div class="intro-kicker">VESPER TOWER · INCIDENT FILE 013</div><h1 class="hero-title">THE LAST<br><span>ELEVATOR.</span></h1><p class="lead">01:13 sáng. Tòa nhà chỉ có 12 tầng. Một người vừa bấm số 13.<br>Bạn là Linh, người nhận ba ca cuối trước khi bộ điều khiển cũ bị tháo. Đêm đầu tiên, điện thoại bàn nhận một cuộc gọi không có số. Bên kia, có người vẫn đang đợi bạn trả lời.</p><div class="quote">KIỂM TRA. SUY LUẬN. QUYẾT ĐỊNH.<br>Có những cánh cửa chỉ mở được khi người bên ngoài chịu ở lại.</div><div class="intro-stats"><div><span>CA TRỰC</span><strong>03 NIGHTS</strong></div><div><span>HÀNH KHÁCH</span><strong>12 CASES</strong></div><div><span>ĐIỂM CAO NHẤT</span><strong>'+String(b.score).padStart(4,'0')+'</strong></div></div><p class="lead" style="font-size:12px">Khuyến nghị bật âm thanh, nhưng game có thể chơi hoàn toàn không cần tiếng.</p>');
+    addButtons(hasSave?[['TIẾP TỤC CA TRỰC →',function(){state=load();platform.begin();startCase()},false],['CA MỚI',startNew,true]]:[['BẮT ĐẦU CA TRỰC →',startNew,false]]);
   }
-  function startNew(){endingShown=false;state=fresh();save();showNightIntro(1)}
+  function startNew(){platform.begin();endingShown=false;state=fresh();save();showNightIntro(1)}
   function showNightIntro(n){
     var s=scenes[n-1];
     audio.setNight(n);sound('night');
-    uiOverlay('<span class="scene-label">VESPER TOWER / NIGHT 0'+n+' · '+s.subtitle+'</span><h2>'+s.name+'</h2><p class="lead">'+escapeHTML(nightBody(n))+'</p><div class="quote">'+s.line+'</div><div class="instruction-list"><div class="instruction-item"><b>QUY TẮC 01.</b> Tối đa 2 nguồn xác minh khác nhau; có thể đọc lại nguồn đã mở.</div><div class="instruction-item"><b>QUY TẮC 02.</b> Đối chiếu hồ sơ với hành trình và yêu cầu thực tế. Từ chối nhầm làm giảm độ tin cậy.</div><div class="instruction-item"><b>QUY TẮC 03.</b> Không phải người đã chết nào cũng nguy hiểm. Đừng cấp tên mới hoặc xóa log theo lời hành khách.</div></div>');
+    uiOverlay('<span class="scene-label">VESPER TOWER / NIGHT 0'+n+' · '+s.subtitle+'</span><h2>'+s.name+'</h2><p class="lead">'+escapeHTML(nightBody(n))+'</p><div class="quote">'+s.line+'</div><div class="instruction-list"><div class="instruction-item"><b>QUY TẮC 01.</b> Tối đa 2 nguồn xác minh khác nhau; có thể đọc lại nguồn đã mở.</div><div class="instruction-item"><b>QUY TẮC 02.</b> Đối chiếu hồ sơ với hành trình và yêu cầu thực tế. Từ chối nhầm làm giảm độ tin cậy.</div><div class="instruction-item"><b>QUY TẮC 03.</b> Giữ bản ghi gốc. Mọi lệnh xóa dữ liệu hoặc cấp thẻ mới đều cần xác nhận độc lập.</div></div>');
     addButtons([['BẮT ĐẦU NIGHT 0'+n+' →',startCase,false]]);
   }
   function nightOf(i){return i<4?1:i<8?2:3}
@@ -249,7 +249,7 @@
       '<div class="rule-entry"><b>01 /</b> Tòa nhà chỉ có 12 tầng được phép vận hành.</div>'+
       '<div class="rule-entry"><b>02 /</b> Khách không có tên trong sổ có thể được cho vào nếu có xác nhận hợp lệ.</div>'+
       '<div class="rule-entry"><b>03 /</b> Camera có thể nhiễu. Không đưa ra kết luận chỉ từ một dấu hiệu.</div>'+
-      '<div class="rule-entry"><b>04 /</b> Không bắt buộc từ chối người đã chết; hãy phân biệt ý định của họ.</div>'+
+      '<div class="rule-entry"><b>04 /</b> Người không có hồ sơ hiện tại cần được đối chiếu với bản lưu và người đón.</div>'+
       '<div class="rule-entry"><b>05 /</b> Nếu xuất hiện hai bản ghi cùng một người, phải kiểm tra hành trình.</div>'+
       '<div class="rule-entry"><b>06 /</b> Không bao giờ thực hiện lệnh xóa log từ hành khách.</div>';
     }else{
@@ -260,36 +260,45 @@
     $('#dossier-content').innerHTML=html;
   }
   function wasAdmitted(id){return state.history.some(function(h){return h.id===id&&h.action==='admit'})}
+  function choiceEcho(id){
+    var entry=state.history.find(function(h){return h.id===id});
+    if(!entry)return '';
+    return people[cases[id-1].person].name+' — '+(entry.action==='admit'?'CHO PHÉP':'TỪ CHỐI');
+  }
   function caseQuote(item){
-    if(item.id===9&&!wasAdmitted(2))return 'Đơn từ đêm đầu bị chị từ chối, nên tôi quay lại. Vẫn mã D-719. Lần này cứ cho qua, khỏi gọi khách.';
+    if(item.id===9&&!wasAdmitted(2))return 'Đơn từ đêm đầu bị chị từ chối. D-719. Em vẫn chờ. Chị đã về nhà rồi, đúng không?';
     return item.quote;
   }
   function caseNote(item){
-    if(item.id===11&&!wasAdmitted(3))return 'Bảy trở lại sau lần bị từ chối ở đêm đầu. Chùm chìa khóa vẫn ở tay ông; chưa có chiếc nào được trao cho bạn.';
+    if(item.id===11&&!wasAdmitted(3))return 'Bảy còn mang chùm chìa khóa từ lần bạn không cho ông lên tầng 3. Ông đặt nó xuống, vẫn giữ đầu sợi chỉ đỏ trong tay.';
     return item.note;
   }
   function nightBody(n){
     var body=scenes[n-1].body;
-    if(n===2)body+=' Lượt mang thẻ Minh thứ hai '+(wasAdmitted(4)?'đã được cho vào; một quyền lạ còn nằm trong cabin.':'đã bị từ chối; chữ ký người trực vẫn chưa bị thay.');
+    if(n===2)body+=' Trong ngăn bản ghi, lượt mang thẻ Minh '+(wasAdmitted(4)?'đã được cho vào; phiên không chủ vẫn sáng.':'đã bị từ chối; phiên không chủ chưa được mở.');
     return body;
   }
   function nightSummaryText(done){
     if(done===1){
-      var minh=wasAdmitted(4)?'Bạn đã cho bản sao Minh vào cabin. Một dòng trống theo nó đi lên, nhưng khóa cổng ngoài chưa mở.':'Bạn đã giữ bản sao Minh ngoài cabin. Nó vẫn nói qua intercom, như thể đã ở trong đường dây từ trước.';
-      return minh+' Tiếng chim sáng lên ngoài sảnh; đồng hồ bàn trực không qua được 01:13. Dưới tờ phân ca xuất hiện một con số: 2013. Ngày ngoài kia đã đổi, còn ca của bạn thì chưa.';
+      var visitor=wasAdmitted(4)?'Cabin đã mang người có thẻ Minh lên tầng 6. Camera 602 ghi một bàn tay giữ cửa từ bên trong.':'Người có thẻ Minh vẫn ở ngoài khi cửa đóng. Vậy mà loa trong cabin phát tiếng anh ta ho.';
+      return visitor+' Trời sáng. Bạn bước ra cổng, gọi xe về nhà. Điện thoại hiện bản chép âm từ máy trực: “'+choiceEcho(4)+'.” Bên dưới là nhãn 2013. Bạn vừa chọn câu đó đêm nay. Trong bản sóng, sau giọng người trực có mười nhịp gõ.';
     }
-    var repair=wasAdmitted(5)?'Bản chẩn đoán Minh gửi xác nhận lỗi rơ-le và hai nguồn điện riêng.':'Minh đã rời đi, không trao bản sao chẩn đoán. Phiếu cũ lưu sẵn trong máy vẫn cho thấy rơ-le cần sửa và hai nguồn điện riêng.';
-    var child=wasAdmitted(6)?'An đang đợi trong chuyến cabin chưa kết thúc.':'An vẫn chờ ở chiếu nghỉ tầng 9, ôm con gấu.';
-    var order=wasAdmitted(8)?'Phiên lệnh của người giả Hạnh đã vào hệ thống; bản lưu chỉ đọc còn giữ được dấu vết gốc.':'Lệnh xóa log của người giả Hạnh đã bị chặn; hai bản biên bản vẫn còn nguyên.';
-    return repair+' '+child+' '+order+' Từ loa, một giọng không còn giả ai thì thầm: “Họ gọi tôi là Kẻ Đi Nhờ. Không ai ghi tên tôi, nên tôi sẽ dùng tên người trực.”';
+    var repair=wasAdmitted(5)?'Minh để lại bản chẩn đoán và nhắn: “Đừng giao máy khi chưa nghe hết.”':'Minh đã rời đi, không trao bản sao chẩn đoán. Phiếu cũ lưu sẵn trong máy có số để gọi lại; bạn chưa gọi.';
+    var child=wasAdmitted(6)?'An đang đợi trong chuyến cabin. Chỗ cạnh con gấu vẫn để trống.':'An vẫn chờ ở chiếu nghỉ tầng 9. Camera chỉ còn thấy hai bàn chân dưới gấu áo.';
+    var order=wasAdmitted(8)?'Lệnh xóa đã nhận được quyền, nhưng chưa chạm tới vùng chỉ đọc.':'Lệnh xóa bị chặn. Bản lưu gốc vẫn chờ người đọc tên mình.';
+    return repair+' '+child+' '+order+' Màn hình chép lại “'+choiceEcho(6)+'”, rồi “'+choiceEcho(8)+'”. Cả hai được gắn vào một giọng. Khi về tới nhà, bạn đứng ngoài cửa rất lâu mới dám gọi người bên trong.';
   }
   function clueText(item,key){
-    if(item.id===5&&key==='l'&&wasAdmitted(4))return 'Biên bản an ninh: thẻ Minh xuất hiện hai lần đêm đầu, bản sao đã được cho vào. Chủ thẻ thật có phiếu sửa chữa hiện tại. Chẩn đoán lưu sẵn: rơ-le thay sai gây tai nạn 2013; lệnh ngắt nguồn phụ đến từ intercom, không có tài khoản duyệt. Quyền lạ trong cabin cần được hủy trước khi mở cổng ngoài.';
-    if(item.id===9&&!wasAdmitted(2)){
-      if(key==='r')return 'Mã đơn #D-719 chưa được giao vì bị từ chối ở đêm đầu tiên. Mã đã hết hiệu lực, không có đơn mới từ 1102. Yêu cầu hiện tại dùng số tài khoản cư dân đã ngừng năm 2013; việc giao thất bại không hợp thức hóa tài khoản đó.';
-      if(key==='l')return 'Tầng 11 xác nhận chưa nhận đồ từ Huy sau khi ca trực từ chối đơn #D-719. Tài khoản gửi yêu cầu mới bị xóa từ năm 2013. 1102 không gửi xác nhận mới; quyền ký duyệt đang bị sao chép từ sổ trực LINH.';
+    if(item.id===5&&key==='l')return 'Hai lượt thẻ Minh đêm đầu; lượt ở sảnh '+(wasAdmitted(4)?'đã được cho vào. Phiên không có mã chủ còn hoạt động.':'đã bị từ chối. Không có phiên phụ được mở.')+' Bộ lưu 2013 có 11 giây bị tách khỏi báo cáo. Rơ-le từng giữ cabin ở chiếu nghỉ 13; nguồn phụ chỉ nuôi đèn và chốt cứu hộ.';
+    if(item.id===7&&key==='c')return item.c+' Bản chép âm đang ghép lại một lệnh vừa lưu: “'+choiceEcho(4)+'.” Không có âm gốc riêng cho người mặc áo khoác.';
+    if(item.id===9){
+      if(key==='r'&&!wasAdmitted(2))return 'D-719 chưa được giao vì bị từ chối đêm đầu. Mã hết hạn; 1102 không đặt lại. Yêu cầu mới đến từ máy nội bộ đã bị tháo sau sự cố 2013.';
+      if(key==='l')return (wasAdmitted(2)?'1102 đã nhận đồ ở đêm đầu.':'1102 chưa nhận đồ sau lần giao bị từ chối.')+' Không có đơn mới. Bản chép âm đính kèm: “'+choiceEcho(2)+'.” Gói âm chỉ có tiếng đã lưu ở bàn trực, không có tiếng phố trong ca hiện tại.';
     }
-    if(item.id===10&&key==='l'&&!wasAdmitted(1))return '01:08 của đêm đầu: yêu cầu lên tầng 8 đã bị từ chối. Dấu thời gian hiện tại trên thẻ từ vẫn sao chép nguyên xi bản ghi đêm đầu.';
+    if(item.id===10){
+      if(key==='l')return (wasAdmitted(1)?'Đêm đầu có một lượt lên tầng 8 sau khi Mai được cho vào.':'Yêu cầu lên tầng 8 của Mai đã bị từ chối; cô đi cầu thang.')+' Lượt đang xin dùng lại nguyên dấu thời gian cũ, không có lần quẹt mới. Kèm theo là lệnh bàn trực: “'+choiceEcho(1)+'.”';
+      if(key==='c')return item.c+' Phần tiếng dưới sảnh lặp “'+choiceEcho(1)+'”, không khớp môi Mai trên cuộc gọi hình.';
+    }
     return item[key];
   }
   function renderClue(kind){
@@ -302,7 +311,7 @@
     $('#scans-left').textContent=String(2-state.opened.length).padStart(2,'0')+' / 02';
   }
   function inspect(kind){
-    if(!state||$('#game-shell').hidden||overlay.classList.contains('visible')||!Object.prototype.hasOwnProperty.call(inspectionSources,kind))return;
+    if(platformPaused||!state||$('#game-shell').hidden||overlay.classList.contains('visible')||!Object.prototype.hasOwnProperty.call(inspectionSources,kind))return;
     var item=cases[state.i];if(!item)return;
     if(state.opened.includes(kind)){
       // Keep the latest viewed source last so existing saves restore it after reload.
@@ -318,7 +327,7 @@
     if(kind==='camera'&&item.spooky){$('#elevator-stage').classList.remove('glitch');void $('#elevator-stage').offsetWidth;$('#elevator-stage').classList.add('glitch')}
   }
   function decide(action){
-    if(!state||state.i>=12||overlay.classList.contains('visible'))return;
+    if(platformPaused||!state||state.i>=12||overlay.classList.contains('visible'))return;
     var item=cases[state.i],correct=(action==='admit')===item.safe;
     sound(correct?'door':'bad');
     if(correct){state.correct++;state.score+=100;if(item.safe)state.trust++}
@@ -338,31 +347,34 @@
   }
   function showNightSummary(){
     var done=nightOf(state.i-1),next=done+1;
-    uiOverlay('<span class="scene-label">NIGHT 0'+done+' / SHIFT COMPLETE</span><h2>BẢN GHI<br>CA TRỰC</h2><p class="lead">'+escapeHTML(nightSummaryText(done))+'</p><div class="result-grid"><div class="result-item"><strong>'+state.correct+'</strong><small>ĐÚNG</small></div><div class="result-item"><strong>'+state.breach+'</strong><small>BREACH</small></div><div class="result-item"><strong>'+state.evidence+'</strong><small>EVIDENCE</small></div></div><div class="quote">'+(done===1?'“Hồ sơ có thể đúng tên, nhưng người đứng trước cửa chưa chắc đã đi đúng hành trình.”':'“Có người bị xóa tên khi người ta vội khép hồ sơ tai nạn. Có thứ chỉ đợi một cái tên bị bỏ trống.”')+'</div>');
+    uiOverlay('<span class="scene-label">NIGHT 0'+done+' / SHIFT COMPLETE</span><h2>BẢN GHI<br>CA TRỰC</h2><p class="lead">'+escapeHTML(nightSummaryText(done))+'</p><div class="result-grid"><div class="result-item"><strong>'+state.correct+'</strong><small>ĐÚNG</small></div><div class="result-item"><strong>'+state.breach+'</strong><small>BREACH</small></div><div class="result-item"><strong>'+state.evidence+'</strong><small>EVIDENCE</small></div></div><div class="quote">'+(done===1?'BẢN CHÉP ÂM / KÊNH KHÔNG XÁC ĐỊNH: “Cô còn ở đó không?”':'BẢN CHÉP ÂM / 11 GIÂY CÒN LẠI: “Tám... chín...”')+'</div>');
     addButtons([['TIẾP TỤC NIGHT 0'+next+' →',function(){showNightIntro(next)},false]]);
   }
   function showFinale(){
-    var memory=wasAdmitted(12)?'Ký ức vừa trở về khớp với hình người trực rời ghế.':'Bạn chưa nhận lại phần ký ức ở bàn G; đoạn băng gốc vẫn hiện lên để đối chiếu.';
-    uiOverlay('<span class="scene-label">01:13 AM / FINAL TRANSMISSION</span><h2>CHUYẾN ĐI<br><span class="ending-title">CUỐI CÙNG.</span></h2><p class="lead">Cửa chiếu nghỉ 13 hiện trên màn hình, chưa mở ra ngoài. Bộ lưu chỉ đọc tự phát băng gốc: năm 2013, rơ-le sai giữ cabin lại; Bảy vào cứu An và mẹ là Vân. Một giọng giả danh quản lý bảo ngắt nguồn phụ. Cửa cứu hộ đóng. Linh rời ghế đi tìm họ. Mất tín hiệu bị phần mềm ghi nhầm thành “cabin trống”. Ban quản lý năm 2013 đã duyệt bản báo cáo và gạch cả bốn tên khi chưa đối chiếu phụ lục cứu hộ.</p><p class="lead">'+escapeHTML(memory)+' Kẻ Đi Nhờ đã có trong đường dây trước tai nạn; bản báo cáo sai cho nó chỗ trống để chiếm danh tính. Cho bản sao vào cabin chỉ đưa nó tới hệ thống. Cửa này mới là nơi một tên trong sổ được phép rời tòa nhà.</p><div class="quote">Bên trong nắp bàn trực có khắc: “Ngắt nguồn chính để khóa động cơ. Giữ nguồn phụ. Kéo cần mở cửa cứu hộ bằng tay.” Bên dưới là bốn tên chưa được xác nhận trở về: BẢY · AN · VÂN · LINH.</div><p class="lead">Khóa tầng 13 sẽ giữ thứ ấy lại, cùng những người mắc kẹt. Cắt cả hai nguồn sẽ đóng luôn cửa cứu hộ. Muốn mở cửa an toàn, bạn phải có đủ bằng chứng đối chiếu tên thật, còn được tin cậy và giữ quyền lạ trong cabin ở mức có thể kiểm soát.</p><p class="lead">Bằng chứng thu thập: <strong>'+state.evidence+'</strong> · Độ tin cậy: <strong>'+state.trust+'</strong> · Thực thể lọt qua: <strong>'+state.breach+'</strong></p><p class="lead" style="font-size:12px">Tên bạn có trong danh sách. Nhưng người bước ra có còn là bạn không?</p>');
+    var memory=wasAdmitted(12)?'Bạn để cô gái trên băng nói hết.':'Bạn đã khóa lối về bàn G. Máy vẫn giữ băng gốc; bạn có thể quay mặt đi, không thể làm nó chưa từng tồn tại.';
+    uiOverlay('<span class="scene-label">01:13 AM / ORIGINAL RECORDING</span><h2>MƯỜI MỘT<br><span class="ending-title">GIÂY CUỐI.</span></h2><p class="lead">'+escapeHTML(memory)+' Ảnh dừng ở tay bạn trên công tắc có chỉ đỏ. Trên bản chép âm, An đếm đủ mười.</p><div class="quote" data-original-recording>AN: “Tám. Chín. Mười. Cô ơi?”<br>[Tiếng ngắt nguồn phụ. Chốt cứu hộ đóng.]<br>LINH: “Không còn ai trong cabin.”</div><p class="lead">Bạn đã nghe con bé. Bạn sợ đường điện chập, cắt cả nguồn phụ rồi ký xác nhận trống. Bảy, An và Vân bị gạch khỏi báo cáo. Bạn được đưa ra ngoài lúc 02:06. Bạn đã về nhà đêm ấy. Họ thì không.</p><p class="lead">Đường loa bây giờ ghép “'+escapeHTML(choiceEcho(2))+'” vào cùng giọng trong băng. Nó chưa từng có một tiếng nói riêng. Mười ba năm nay, nó trú dưới câu cabin trống. Đêm nay, nó học thêm những lời bạn cho phép và từ chối. Chỉ còn thiếu một chữ ký bàn giao để mang giọng bạn ra khỏi chiếc máy này.</p><div class="quote">PHỤ LỤC: BẢY · AN · VÂN — CHƯA TRỞ VỀ.<br>NGƯỜI XÁC NHẬN: LINH — CÒN SỐNG.<br>Dòng khắc dưới nắp bàn: ngắt nguồn chính, giữ nguồn phụ, kéo cần mở cửa cứu hộ bằng tay.</div><p class="lead">Khóa tầng 13 giữ cửa đóng và giữ nguyên lời khai. Cắt cả hai nguồn dừng việc đối chiếu; đến sáng, đội thợ sẽ xóa bộ nhớ cũ. Mở cửa sẽ đưa bản đối chiếu vào hồ sơ bàn giao: nếu thiếu bằng chứng, mất xác nhận từ những người đã gặp hoặc còn quá nhiều phiên không tên, thứ trong loa có thể ký thay bạn.</p><p class="lead">Bằng chứng thu thập: <strong>'+state.evidence+'</strong> · Độ tin cậy: <strong>'+state.trust+'</strong> · Phiên không tên: <strong>'+state.breach+'</strong></p><p class="lead" style="font-size:12px">Lần này, dưới câu trả lời sẽ là tên ai?</p>');
     addButtons([['KHÓA TẦNG 13',function(){showEnding('keeper')},true],['MỞ CỬA TẦNG 13',function(){showEnding(state.evidence>=4&&state.trust>=4&&state.breach<=1?'truth':'replacement')},false],['CẮT NGUỒN ĐIỆN',function(){showEnding('silence')},true]]);
   }
   var endings={
-    keeper:{title:'THE KEEPER',subtitle:'Bạn giữ cửa. Và ở lại phía bên này.',text:'Bạn khóa liên động chiếu nghỉ 13, giữ nguồn phụ sáng. Kẻ Đi Nhờ không thể mang tên Linh ra cổng ngoài. Ở sảnh thật, Mai và những cư dân còn sống sẽ qua được một đêm không có thứ ấy đi theo. Nhưng các tên trong biên bản cứu hộ vẫn chưa được xác nhận trở về. Bạn ngồi xuống, đặt tay lên công tắc để giữ khóa. Ngoài kia trời sáng; tại bàn trực, đồng hồ trở về 01:13. Dưới dòng CA TRỰC THỨ NHẤT, tên LINH lại hiện ra.',tone:'Bạn giữ an toàn cho người còn sống. Chuyến đi của những người đã mất vẫn chưa kết thúc.'},
-    replacement:{title:'THE REPLACEMENT',subtitle:'Cái tên ra ngoài. Người mang tên ở lại.',text:'Bạn mở cửa khi chưa thể đối chiếu và giữ an toàn toàn bộ danh sách. Một lượt không tên chen vào ô LINH trước khi máy kịp xác nhận. Kẻ Đi Nhờ khoác đồng phục của bạn, ký trả ca rồi bước qua cổng ngoài bằng khuôn mặt bạn. Camera sảnh ghi Linh đã về nhà. Trong phòng điều khiển, bạn vẫn đặt tay trên công tắc. Tên bạn vừa được dùng hết; khi bạn gọi vào intercom, màn hình chỉ hiện một hàng trống.',tone:'Thứ từng xin một cái tên đã có tên của bạn. Không ai còn nhận ra giọng người ở trong loa.'},
-    truth:{title:'THE TRUTH',subtitle:'Ca cứu hộ cuối cùng đã có người xác nhận.',text:'Bảy đứng lại đến khi người cuối cùng qua cửa. Bản đối chiếu được lưu vào kho chỉ đọc để người sống tìm thấy: cabin không trống, và Linh đã quay vào cứu người sau khi nhận ra mệnh lệnh giả. Không phải một nhân viên mới bị bổ sung vào danh sách mất tích; tên bạn vốn ở đó từ năm 2013. Bạn khép sổ, lần đầu không ký nhận ca tiếp theo. Ở sảnh ngoài, đồng hồ đi qua 01:14.',tone:'Không ai bị bỏ lại dưới một dòng “không có người”. Lần này, ca trực thực sự kết thúc.'},
-    silence:{title:'THE SILENCE',subtitle:'Bạn dừng tiếng động, không kết thúc chuyến đi.',text:'Bạn hạ cả nguồn chính lẫn nguồn phụ. Động cơ dừng; chốt cứu hộ đóng lại, đúng như đêm năm 2013. Kẻ Đi Nhờ không qua được cổng, nhưng những người mắc kẹt cũng không thể ra. Đèn cuối cùng tắt trước khi biên bản được xác nhận. Không có đêm thứ nhất quay lại, không có bình minh trong phòng trực: chu kỳ bị treo giữa một giây chưa kết thúc. Trong bóng tối, An vẫn hỏi có ai đang ở ngoài cửa không.',tone:'Tòa nhà im tiếng. Những người bên trong chưa được về.'}
+    keeper:{title:'THE KEEPER',subtitle:'Không ai qua cửa. Không ai được trả lời.',text:'Bạn khóa chiếu nghỉ 13, giữ nguồn phụ sáng. Bên trong, có người thử tay nắm một lần rồi thôi. Bạn ký bàn giao nguyên trạng. Sáng ra, đội thợ tháo bộ điều khiển; bản sao dữ liệu được nhập sang máy mới. Trong ngày nghiệm thu, loa thử bằng giọng bạn: “Không còn ai trong cabin.” Mọi người gật đầu vì âm thanh rất rõ. Chỉ bạn nghe được tiếng đếm phía sau.',tone:'Bạn giữ được cửa. Câu nói cũ đi tiếp mà không cần mở cửa.'},
+    replacement:{title:'THE REPLACEMENT',subtitle:'Bản bàn giao hợp lệ. Người ký không có lượt ra.',text:'Cửa mở trước khi các bản đối chiếu khớp nhau. Ô ký tên nhận nét chữ từ bản ghi người trực; những ô làm chứng vẫn chưa khớp. Trong camera cổng, Linh trả thẻ, nói cảm ơn rồi đi ra ngoài. Bạn còn ngồi ở bàn, bàn tay xuyên qua máy nói. Điện thoại của bạn trên camera đổ chuông. Người vừa ra cổng áp máy vào tai: “Tôi ở đây.” Bạn đập vào kính. Hệ thống lưu tiếng đó vào mục TẠP ÂM.',tone:'Thứ ấy không cần giống bạn mãi. Nó chỉ cần người ở nhà mở cửa một lần.'},
+    truth:{title:'THE TRUTH',subtitle:'Có ba người trong cabin. Tôi đã nghe thấy họ.',text:'Bạn đọc lời khai mới bằng tên mình. Giọng trong loa thử chen “không còn ai”, nhưng câu ấy giờ nằm cạnh ba cái tên và bản âm gốc; nó không còn một ô trống để ký thay. Tiếng đếm dừng. Sáng ra, Linh ngồi trước người nhận bàn giao, yêu cầu giữ cả báo cáo sai lẫn bản đính chính. Tờ sau có câu: “Tôi đã nghe thấy họ. Tôi vẫn ký.” Bạn không gọi đó là được tha thứ. Khi rời phòng, điện thoại rung: Mai gửi ảnh một chậu cây ở cửa sổ. Đồng hồ trên ảnh đã qua 01:14.',tone:'Lần này bạn không được xóa khỏi câu chuyện. Những người kia cũng vậy.'},
+    silence:{title:'THE SILENCE',subtitle:'Không còn bản ghi. Không có nghĩa là không còn ai.',text:'Bạn cắt nguồn chính rồi cả nguồn phụ. Chốt cứu hộ đóng. Chỉ đỏ rơi xuống nền, cạnh tai gấu trong ngăn kéo mở. Sáng ra, đội thợ chép báo cáo đã duyệt rồi xóa dữ liệu cũ theo lịch bàn giao. Hồ sơ mới vẫn ghi cabin trống. Đoạn âm còn lại chưa từng được đưa vào đó. Bạn về nhà. Đêm đó, trong lúc ngủ, bạn nghe mình đếm tới chín rồi nín thở. Không có giọng nào đếm hộ số cuối.',tone:'Bạn có thể làm chiếc máy im. Bạn đã thử điều đó một lần rồi.'}
   };
   function endingText(key){
+    if(key==='keeper')return endings.keeper.text+' Bản bàn giao còn dòng thao tác cuối: “'+choiceEcho(12)+'.”';
+    if(key==='replacement')return 'Dòng được dùng làm mẫu chữ ký: “'+choiceEcho(2)+'.” '+endings.replacement.text;
     if(key!=='truth')return endings[key].text;
-    var opening=wasAdmitted(11)?'Ông Bảy tra chiếc chìa khóa vào ổ cũ. Bạn ngắt nguồn chính, giữ nguồn phụ và kéo cần mở cửa thủ công. ':'Chiếc chìa khóa đã biến mất. Theo dòng khắc dưới nắp bàn trực, bạn ngắt nguồn chính, giữ nguồn phụ rồi kéo cần mở cửa thủ công ở tầng 13. ';
-    var child=wasAdmitted(6)?'Từ cabin, Bé An chạy tới nắm tay mẹ ở đầu hành lang sáng đèn. ':'Từ chiếu nghỉ tầng 9, An nghe mẹ gọi đúng tên mình và bước vào hành lang cứu hộ vừa mở. Hai mẹ con nắm tay nhau. ';
-    var memory=wasAdmitted(12)?'Phần ký ức đã trở về cho bạn nhớ hết chuyến cứu hộ. ':'Bạn đọc tên LINH trong bản đối chiếu; phần ký ức bị từ chối ở bàn G cuối cùng tìm được đường về khi cửa cứu hộ mở. ';
-    var intruder=state.breach?'Bạn hủy lượt mượn tên đã lọt vào cabin; dấu vết không khớp danh sách bị giữ sau cửa. ':'Không có lượt giả nào trong cabin để chiếm ô tên vừa phục hồi. ';
-    return 'Bạn dùng những bằng chứng đã thu thập để đối chiếu lại tên người cần cứu. Những xác nhận còn tin cậy giúp hệ thống giữ tên thật, thay vì cấp danh tính cho ô trống. '+intruder+opening+child+memory+endings.truth.text;
+    var opening=wasAdmitted(11)?'Ông Bảy tra chiếc chìa khóa vào ổ cũ. Bạn ngắt nguồn chính, giữ nguồn phụ và kéo cần mở cửa thủ công. ':'Không có chìa khóa được trao. Theo dòng khắc dưới nắp bàn trực, bạn ngắt nguồn chính, giữ nguồn phụ rồi kéo cần mở cửa thủ công. ';
+    var child=wasAdmitted(6)?'Từ cabin, Bé An đưa con gấu cho mẹ rồi quay nhìn chiếc ghế trực. ':'Từ chiếu nghỉ tầng 9, An nghe mẹ gọi và đi về phía cửa cứu hộ. Con gấu đi trước, như để thử xem lần này có ai giữ cửa. ';
+    var memory=wasAdmitted(12)?'Phần ký ức đã trở về nằm nguyên trong lời khai mới, kể cả tiếng bạn trả lời sau khi nghe An. ':'Bạn giữ cả đoạn ký ức bị từ chối ở bàn G trong lời khai; không có cô gái nào hiện ra để ký hộ. ';
+    var intruder=state.breach?'Bạn hủy lượt mượn tên đã lọt vào cabin bằng bản đối chiếu, giữ phiên ấy sau cửa. ':'Bản đối chiếu không có phiên không tên nào cần nhận thay một hành khách. ';
+    return intruder+opening+child+'Bảy giữ cửa cho Vân và An qua hết. Hình ba người nhạt dần. Băng chạy hết, camera sảnh trở về một khung không người. Chiếc tai vải trên quầy cũng mất, còn đường chỉ đỏ hằn trên tay bạn. '+memory+endings.truth.text;
   }
   function showEnding(key){
     var e=endings[key];recordBest(key);
     endingShown=true;
+    platform.finish({score:state.score,ending:key,correct:state.correct,evidence:state.evidence,breach:state.breach});
     audio.finish(key);
     removeStorage(SAVE_KEY);
     var rank=state.correct>=10?'S':state.correct>=8?'A':state.correct>=6?'B':'C';
@@ -396,7 +408,7 @@
   document.addEventListener('keydown',function(ev){
     if(overlay.classList.contains('visible')){
       if(ev.key==='Tab'){
-        var buttons=Array.prototype.slice.call(overlayCard.querySelectorAll('button:not(:disabled),a[href]'));
+        var buttons=Array.prototype.slice.call(overlayCard.querySelectorAll('button:not(:disabled)'));
         var first=buttons[0],last=buttons[buttons.length-1];
         if(!first){ev.preventDefault();overlay.focus()}
         else if(!overlayCard.contains(document.activeElement)||(ev.shiftKey&&document.activeElement===first)||(!ev.shiftKey&&document.activeElement===last)){
@@ -418,4 +430,19 @@
   });
   updateSoundControls();
   showIntro();
+  platform.attach({
+    notify:toast,
+    save:function(){if(state&&!endingShown)save()},
+    pause:function(){
+      if(state&&!endingShown)save();
+      platformPaused=true;overlay.inert=true;setBackgroundInert(true);audio.setPaused(true);
+    },
+    resume:function(){
+      platformPaused=false;overlay.inert=false;
+      var modal=overlay.classList.contains('visible');
+      setBackgroundInert(modal);audio.setPaused(false);
+      var focus=modal?overlayCard.querySelector('button'):$('#visitor-name');
+      if(focus)focus.focus({preventScroll:true});
+    }
+  });
 })();

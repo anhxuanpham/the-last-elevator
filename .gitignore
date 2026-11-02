@@ -1,0 +1,14 @@
+node_modules/
+.wrangler/
+[.]env*
+[.]dev.vars*
+*.pem
+*.key
+*.p12
+.DS_Store
+npm-debug.log*
+test-results/
+playwright-report/
+
+# Local plans, machine-specific review scripts, screenshots and diagnostic logs.
+plans/

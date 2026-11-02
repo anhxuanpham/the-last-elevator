@@ -1,0 +1,507 @@
+const assert = require('node:assert/strict');
+const { test, before, after } = require('node:test');
+const http = require('node:http');
+const fs = require('node:fs/promises');
+const path = require('node:path');
+const { chromium, webkit } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const gameRoot = path.resolve(process.env.GAME_ROOT || path.join(__dirname, '../dist'));
+const port = 8080;
+const url = `http://127.0.0.1:${port}/`;
+const SAVE = 'tle_floor13_save_v1', BEST = 'tle_floor13_best_v1';
+const safe = [true, true, true, false, true, true, false, false, false, false, true, true];
+const evidence = [null, null, 'log', 'log', 'log', 'registry', 'camera', 'log', 'log', 'camera', 'log', 'camera'];
+let server, browser;
+
+before(async () => {
+  server = http.createServer(async (req, res) => {
+    const files = { '/': 'index.html', '/index.html': 'index.html', '/game.js': 'game.js', '/styles.css': 'styles.css', '/assets/elevator-lobby.png': 'assets/elevator-lobby.png' };
+    const file = files[req.url];
+    if (!file) { res.writeHead(404).end(); return; }
+    try {
+      const content = await fs.readFile(path.join(gameRoot, file));
+      const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png' };
+      res.writeHead(200, { 'Content-Type': mime[path.extname(file)] }).end(content);
+    } catch { res.writeHead(404).end(); }
+  });
+  await new Promise((resolve, reject) => { server.once('error', reject); server.listen(port, '127.0.0.1', resolve); });
+  browser = await (process.env.BROWSER === 'webkit' ? webkit : chromium).launch({ headless: true });
+});
+after(async () => {
+  if (browser) await browser.close();
+  if (server && server.listening) await new Promise(resolve => server.close(resolve));
+});
+
+async function withPage(run, options = {}) {
+  const context = await browser.newContext({ viewport: options.mobile ? { width: 390, height: 844 } : { width: 1440, height: 1000 }, reducedMotion: 'reduce' });
+  try {
+    await context.addInitScript(({ seed, fault }) => {
+      for (const [key, value] of Object.entries(seed || {})) localStorage.setItem(key, JSON.stringify(value));
+      if (fault === 'access') Object.defineProperty(window, 'localStorage', { get() { throw new DOMException('Storage disabled', 'SecurityError'); } });
+      else if (fault) for (const method of fault === 'all' ? ['getItem', 'setItem', 'removeItem'] : [fault]) Storage.prototype[method] = function () { throw new DOMException('Storage disabled', 'SecurityError'); };
+    }, { seed: options.seed, fault: options.fault });
+    const page = await context.newPage();
+    const errors = [];
+    page.on('pageerror', err => errors.push(err.message));
+    await page.goto(url, { waitUntil: 'domcontentloaded' });
+    await run(page);
+    assert.deepEqual(errors, [], 'No uncaught browser errors');
+  } finally { await context.close(); }
+}
+const visibleOverlay = p => p.locator('#overlay').evaluate(e => e.classList.contains('visible'));
+const readSave = p => p.evaluate(key => JSON.parse(localStorage.getItem(key)), SAVE);
+const scan = (p, kind) => p.locator(`[data-inspect="${kind}"]`).click();
+async function advance(p) {
+  for (let n = 0; n < 5 && await visibleOverlay(p); n++) await p.locator('#overlay-card .main-cta').click();
+  assert.equal(await visibleOverlay(p), false);
+}
+async function start(p) { await p.locator('#overlay-card .main-cta').click(); await advance(p); }
+async function decide(p, admit, next = true) { await p.locator(admit ? '#admit-btn' : '#deny-btn').click(); if (next) await advance(p); }
+async function toCase(p, index, decisions = safe, collect = false) {
+  for (let i = 0; i < index; i++) {
+    if (collect && evidence[i]) await scan(p, evidence[i]);
+    await decide(p, decisions[i]);
+  }
+}
+async function finale(p, collect = false, decisions = safe, from = 0) {
+  for (let i = from; i < 12; i++) {
+    if (collect && evidence[i]) await scan(p, evidence[i]);
+    await decide(p, decisions[i], i < 11);
+  }
+  await p.locator('#overlay-card .main-cta').click();
+}
+
+for (const [key, title, label, collect] of [
+  ['truth', 'THE TRUTH', 'MỞ CỬA TẦNG 13', true],
+  ['keeper', 'THE KEEPER', 'KHÓA TẦNG 13', false],
+  ['replacement', 'THE REPLACEMENT', 'MỞ CỬA TẦNG 13', false],
+  ['silence', 'THE SILENCE', 'CẮT NGUỒN ĐIỆN', false]
+]) {
+  test(`full playthrough reaches ${title} and records it`, () => withPage(async p => {
+    await start(p); await finale(p, collect);
+    const s = await readSave(p);
+    assert.equal(s.correct, 12); assert.equal(s.breach, 0);
+    assert.equal(s.evidence, collect ? 10 : 0);
+    assert.equal(s.score, collect ? 1450 : 1200);
+    await p.getByRole('button', { name: label, exact: true }).click();
+    assert.equal(await p.locator('#overlay-card h2').innerText(), title);
+    assert.equal(await readSave(p), null);
+    assert.deepEqual(await p.evaluate(key => JSON.parse(localStorage.getItem(key)), BEST), { score: s.score, endings: [key] });
+    await p.reload({ waitUntil: 'domcontentloaded' });
+    assert.match(await p.locator('#overlay-card').innerText(), new RegExp(String(s.score)));
+    assert.equal(await p.getByRole('button', { name: 'TIẾP TỤC CA TRỰC →', exact: true }).count(), 0);
+  }));
+}
+
+test('reload preserves every scan and prevents a third source', () => withPage(async p => {
+  await start(p); await toCase(p, 2);
+  await scan(p, 'registry'); await p.reload({ waitUntil: 'domcontentloaded' }); await advance(p);
+  assert.equal(await p.locator('#scans-left').innerText(), '01 / 02');
+  assert.match(await p.locator('#inspection-report').innerText(), /Ông Bảy/);
+  await scan(p, 'camera');
+  await p.reload({ waitUntil: 'domcontentloaded' }); await advance(p);
+  assert.equal(await p.locator('#scans-left').innerText(), '00 / 02');
+  assert.equal(await p.locator('[data-inspect="log"]').isDisabled(), true);
+  await p.keyboard.press('3');
+  assert.equal((await readSave(p)).evidence, 0);
+  await decide(p, true);
+  assert.equal(await p.locator('#scans-left').innerText(), '02 / 02');
+}));
+
+test('evidence survives reload without duplicate points', () => withPage(async p => {
+  await start(p); await toCase(p, 2); await scan(p, 'log');
+  assert.equal((await readSave(p)).score, 225);
+  await p.reload({ waitUntil: 'domcontentloaded' }); await advance(p);
+  assert.equal((await readSave(p)).evidence, 1);
+  assert.match(await p.locator('#inspection-report').innerText(), /ĐÃ THU THẬP BẰNG CHỨNG/);
+  await p.keyboard.press('3');
+  assert.equal((await readSave(p)).score, 225);
+  assert.equal(await p.locator('#scans-left').innerText(), '01 / 02');
+}));
+
+test('dossier tab navigation never commits a passenger decision', () => withPage(async p => {
+  await start(p);
+  const before = await readSave(p);
+  await p.getByRole('tab', { name: 'Cư dân', exact: true }).focus();
+  for (const [key, label] of [['ArrowRight', 'Quy định'], ['End', 'Nhật ký'], ['ArrowRight', 'Cư dân'], ['ArrowLeft', 'Nhật ký'], ['Home', 'Cư dân']]) {
+    await p.keyboard.press(key);
+    const active = p.getByRole('tab', { name: label, exact: true });
+    assert.equal(await active.getAttribute('aria-selected'), 'true');
+    assert.equal(await active.evaluate(e => e === document.activeElement), true);
+    assert.equal(await p.locator('[role="tab"][tabindex="0"]').count(), 1);
+    assert.equal(await visibleOverlay(p), false);
+    assert.deepEqual(await readSave(p), before);
+  }
+  await p.locator('#visitor-name').focus();
+  await p.keyboard.press('ArrowRight');
+  assert.equal((await readSave(p)).history[0].action, 'admit');
+}));
+
+test('opened clues can be reread without extra scans or duplicate evidence, including after reload', () => withPage(async p => {
+  await start(p); await toCase(p, 2);
+  await scan(p, 'log');
+  const first = await p.locator('#inspection-report').innerText();
+  await scan(p, 'registry');
+  const second = await p.locator('#inspection-report').innerText();
+  const before = await readSave(p);
+  assert.equal(await p.locator('[data-inspect="log"]').isEnabled(), true);
+  assert.equal(await p.locator('[data-inspect="registry"]').isEnabled(), true);
+  assert.equal(await p.locator('[data-inspect="camera"]').isDisabled(), true);
+  await scan(p, 'log');
+  assert.equal(await p.locator('#inspection-report').innerText(), first);
+  await p.keyboard.press('1');
+  assert.equal(await p.locator('#inspection-report').innerText(), second);
+  await p.keyboard.press('3');
+  assert.equal(await p.locator('#inspection-report').innerText(), first);
+  await p.reload({ waitUntil: 'domcontentloaded' }); await advance(p);
+  assert.equal(await p.locator('#inspection-report').innerText(), first);
+  await p.keyboard.press('2');
+  const after = await readSave(p);
+  assert.equal(after.score, before.score);
+  assert.equal(after.evidence, before.evidence);
+  assert.deepEqual(after.found, before.found);
+  assert.deepEqual(after.opened.slice().sort(), before.opened.slice().sort());
+  assert.equal(await p.locator('#scans-left').innerText(), '00 / 02');
+  await scan(p, 'registry');
+  assert.equal(await p.locator('#inspection-report').innerText(), second);
+}));
+
+for (const admitted of [false, true]) {
+  test(`truth ending respects ${admitted ? 'accepting' : 'losing'} Bay's key after reload`, () => withPage(async p => {
+    await start(p);
+    const decisions = safe.slice(); decisions[10] = admitted;
+    await finale(p, true, decisions);
+    const before = await readSave(p);
+    assert.equal(before.trust, admitted ? 9 : 6);
+    await p.reload({ waitUntil: 'domcontentloaded' });
+    await p.getByRole('button', { name: 'TIẾP TỤC CA TRỰC →', exact: true }).click();
+    await p.getByRole('button', { name: 'MỞ CỬA TẦNG 13', exact: true }).click();
+    assert.equal(await p.locator('#overlay-card h2').innerText(), 'THE TRUTH');
+    const copy = await p.locator('.ending-copy').innerText();
+    if (admitted) assert.match(copy, /Ông Bảy tra chiếc chìa khóa vào ổ cũ/);
+    else {
+      assert.doesNotMatch(copy, /Ông Bảy tra chiếc chìa khóa vào ổ cũ/);
+      assert.match(copy, /mở cửa thủ công/);
+      assert.match(copy, /dòng khắc dưới nắp bàn trực/);
+      assert.match(copy, /ngắt nguồn chính, giữ nguồn phụ/);
+    }
+    assert.equal(await readSave(p), null);
+    assert.equal(await p.evaluate(k => JSON.parse(localStorage.getItem(k)).score, BEST), before.score);
+  }));
+}
+
+test('modal traps focus and rejects background inspection events', () => withPage(async p => {
+  await start(p); await toCase(p, 2); await decide(p, true, false);
+  const before = await readSave(p);
+  assert.equal(await p.locator('#game-shell').evaluate(e => e.inert), true);
+  for (let i = 0; i < 8; i++) {
+    await p.keyboard.press(i % 2 ? 'Shift+Tab' : 'Tab');
+    assert.equal(await p.evaluate(() => !!document.activeElement.closest('#overlay')), true);
+  }
+  // Dispatch directly as well, to verify the state guard independently of focus handling.
+  await p.locator('[data-inspect="log"]').dispatchEvent('click');
+  await p.keyboard.press('3');
+  assert.deepEqual(await readSave(p), before);
+  await advance(p);
+  assert.equal(await p.locator('#scans-left').innerText(), '02 / 02');
+  assert.equal(await p.locator('#game-shell').evaluate(e => e.inert), false);
+  assert.equal(await p.evaluate(() => !!document.activeElement.closest('#game-shell')), true);
+  await p.keyboard.press('ArrowLeft');
+  assert.equal((await readSave(p)).history[3].action, 'deny');
+}));
+
+test('transmission signal is independent of passenger safety', () => withPage(async p => {
+  await start(p); const observed = new Set();
+  for (let i = 0; i < 12; i++) {
+    observed.add(`${await p.locator('#signal-value').innerText()}:${safe[i]}`);
+    await decide(p, safe[i], i < 11);
+  }
+  assert.deepEqual([...observed].sort(), ['STABLE:false', 'STABLE:true', 'UNSTABLE:false', 'UNSTABLE:true']);
+}));
+
+for (const admitted of [false, true]) {
+  test(`clues agree with history after ${admitted ? 'admitting' : 'denying'} Huy, Mai and false Minh`, () => withPage(async p => {
+    await start(p);
+    const decisions = safe.slice(); decisions[0] = admitted; decisions[1] = admitted; decisions[3] = admitted;
+    await toCase(p, 4, decisions); await scan(p, 'log');
+    assert.match(await p.locator('#inspection-report').innerText(), admitted ? /đã được cho vào/ : /đã bị từ chối/);
+    for (let i = 4; i < 8; i++) await decide(p, decisions[i]);
+    const quote = await p.locator('#visitor-dialogue').innerText();
+    assert.match(quote, /đêm đầu/);
+    assert.doesNotMatch(quote, /tối qua|đêm qua/);
+    assert.match(quote, admitted ? /vẫn chưa giao được/ : /bị (?:anh|chị) từ chối/);
+    await scan(p, 'registry');
+    assert.match(await p.locator('#inspection-report').innerText(), admitted ? /đã hoàn tất/ : /chưa được giao/);
+    await scan(p, 'log');
+    assert.match(await p.locator('#inspection-report').innerText(), admitted ? /đã nhận đồ/ : /chưa nhận đồ/);
+    await decide(p, false); await scan(p, 'log');
+    assert.match(await p.locator('#inspection-report').innerText(), admitted ? /có một lượt lên tầng 8/ : /đã bị từ chối/);
+  }));
+}
+
+for (const fault of ['access', 'all', 'getItem', 'setItem', 'removeItem']) {
+  test(`game remains playable when storage fails: ${fault}`, () => withPage(async p => {
+    await start(p);
+    await p.locator('#sound-toggle').click();
+    assert.match(await p.locator('#toast').innerText(), /Âm thanh đã/);
+    await finale(p, true);
+    assert.match(await p.locator('#overlay-card').innerText(), /Bằng chứng thu thập: 10/);
+    await p.getByRole('button', { name: 'MỞ CỬA TẦNG 13', exact: true }).click();
+    assert.equal(await p.locator('#overlay-card h2').innerText(), 'THE TRUTH');
+    assert.match(await p.locator('#overlay-card').innerText(), /1\/4 kết thúc/);
+    await p.reload({ waitUntil: 'domcontentloaded' });
+    if (fault === 'removeItem') assert.equal(await p.getByRole('button', { name: 'TIẾP TỤC CA TRỰC →', exact: true }).count(), 0);
+  }, { fault }));
+}
+
+test('invalid saves and achievement records recover to a new game', async () => {
+  const badSaves = [{ i: 0, history: [], found: [] }, { i: 99, history: [], found: [] }, { i: '0', history: [], found: [] }];
+  for (const save of badSaves) await withPage(async p => {
+    assert.equal(await p.getByRole('button', { name: 'TIẾP TỤC CA TRỰC →', exact: true }).count(), 0);
+    assert.doesNotMatch(await p.locator('#overlay-card').innerText(), /NaN|undefined/);
+    await start(p); await decide(p, true);
+    assert.equal((await readSave(p)).score, 100);
+  }, { seed: { [SAVE]: save, [BEST]: { score: '<img src=x>', endings: null } } });
+});
+
+test('valid legacy save and achievements remain compatible', () => withPage(async p => {
+  await start(p); await toCase(p, 2);
+  const saved = await readSave(p); delete saved.opened; delete saved.lastClue;
+  await p.evaluate(({ key, value, bestKey }) => { localStorage.setItem(key, JSON.stringify(value)); localStorage.setItem(bestKey, JSON.stringify({ score: 1500, endings: ['keeper', 'silence'] })); }, { key: SAVE, value: saved, bestKey: BEST });
+  await p.reload({ waitUntil: 'domcontentloaded' }); await advance(p);
+  assert.equal((await readSave(p)).score, 200);
+  assert.equal(await p.locator('#scans-left').innerText(), '02 / 02');
+  await scan(p, 'log'); assert.equal((await readSave(p)).evidence, 1);
+  assert.equal(await p.evaluate(key => JSON.parse(localStorage.getItem(key)).score, BEST), 1500);
+}));
+
+test('mobile and keyboard retain functional controls', () => withPage(async p => {
+  await start(p);
+  assert.equal(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+  await p.keyboard.press('1'); assert.equal(await p.locator('#scans-left').innerText(), '01 / 02');
+  await p.keyboard.press('2'); assert.equal(await p.locator('#scans-left').innerText(), '00 / 02');
+  await p.keyboard.press('ArrowRight'); assert.equal((await readSave(p)).correct, 1);
+}, { mobile: true }));
+
+test('mobile long story modals scroll and keep finale and replay controls reachable', () => withPage(async p => {
+  await start(p); await finale(p, true);
+  const report = path.resolve(__dirname, '../plans/reports');
+  const engine = process.env.BROWSER === 'webkit' ? 'webkit' : 'chromium';
+  await fs.mkdir(report, { recursive: true });
+  async function checkModal() {
+    const metrics = await p.locator('#overlay-card').evaluate(e => {
+      const box = e.getBoundingClientRect();
+      return { top: box.top, bottom: box.bottom, height: innerHeight, width: e.clientWidth, scrollWidth: e.scrollWidth, scrollHeight: e.scrollHeight, clientHeight: e.clientHeight };
+    });
+    assert.ok(metrics.top >= 0 && metrics.bottom <= metrics.height + 1, 'Modal stays inside the mobile viewport');
+    assert.ok(metrics.scrollWidth <= metrics.width + 1, 'Narrative has no horizontal overflow');
+    return metrics;
+  }
+  await checkModal();
+  await p.locator('#overlay-card').evaluate(e => { e.scrollTop = 0; });
+  await p.screenshot({ path: path.join(report, `test-261102-1320-story-mobile-finale-${engine}.png`) });
+  const open = p.getByRole('button', { name: 'MỞ CỬA TẦNG 13', exact: true });
+  await open.scrollIntoViewIfNeeded();
+  await open.click();
+  assert.equal(await p.locator('#overlay-card h2').innerText(), 'THE TRUTH');
+  const ending = await checkModal();
+  assert.ok(ending.scrollHeight > ending.clientHeight, 'Long ending uses the modal scroll area');
+  await p.locator('#overlay-card').evaluate(e => { e.scrollTop = 0; });
+  await p.screenshot({ path: path.join(report, `test-261102-1320-story-mobile-truth-${engine}.png`) });
+  const replay = p.getByRole('button', { name: 'CHƠI LẠI →', exact: true });
+  await replay.scrollIntoViewIfNeeded();
+  assert.ok(await p.locator('#overlay-card').evaluate(e => e.scrollTop > 0), 'Replay is reachable by scrolling the long ending');
+  await replay.click();
+  assert.match(await p.locator('#overlay-card').innerText(), /NIGHT 01/);
+  await advance(p);
+  assert.equal((await readSave(p)).i, 0);
+  assert.equal(await p.locator('#visitor-number').innerText(), '#001');
+}, { mobile: true }));
+
+test('refusing Minh does not hand over unread repair evidence or make him appear at the final rescue', () => withPage(async p => {
+  await start(p); await toCase(p, 4);
+  const decisions = safe.slice(); decisions[4] = false;
+  await decide(p, false, false);
+  const result = await p.locator('#overlay-card .lead').innerText();
+  assert.doesNotMatch(result, /(?:gửi|trao|đưa).*(?:bản sao log|tài liệu|hồ sơ).*cho bạn/i);
+  assert.match(result, /rời sảnh/);
+  assert.match(result, /không trao/);
+  assert.equal((await readSave(p)).evidence, 0, 'A refused passenger awards no unread document');
+  await advance(p);
+  for (let i = 5; i <= 7; i++) {
+    await scan(p, evidence[i]);
+    await decide(p, decisions[i], i < 7);
+  }
+  await p.locator('#overlay-card .main-cta').click();
+  const summary = await p.locator('#overlay-card').innerText();
+  assert.match(summary, /Minh đã rời đi, không trao bản sao/);
+  assert.match(summary, /Phiếu cũ lưu sẵn trong máy/);
+  assert.equal((await readSave(p)).evidence, 3);
+  await advance(p); await finale(p, true, decisions, 8);
+  assert.equal((await readSave(p)).trust, 6);
+  await p.getByRole('button', { name: 'MỞ CỬA TẦNG 13', exact: true }).click();
+  assert.equal(await p.locator('#overlay-card h2').innerText(), 'THE TRUTH');
+  const copy = await p.locator('.ending-copy').innerText();
+  assert.doesNotMatch(copy, /Minh (?:đứng cạnh|đứng bên|trao|đưa cho|gửi cho|mở cửa)/);
+}));
+
+test('refusing Bay on night one keeps his key with him until he is admitted on night three', () => withPage(async p => {
+  await start(p); await toCase(p, 2);
+  const decisions = safe.slice(); decisions[2] = false;
+  await decide(p, false, false);
+  const result = await p.locator('#overlay-card .lead').innerText();
+  assert.match(result, /chìa khóa/);
+  assert.match(result, /mang chùm chìa khóa/);
+  assert.match(result, /không để lại chìa khóa/);
+  assert.equal((await readSave(p)).evidence, 0);
+  await advance(p);
+  for (let i = 3; i < 10; i++) {
+    if (evidence[i]) await scan(p, evidence[i]);
+    await decide(p, decisions[i]);
+  }
+  await decide(p, true, false);
+  assert.match(await p.locator('#overlay-card .lead').innerText(), /chìa khóa/);
+  assert.equal((await readSave(p)).evidence, 7, 'Receiving the key does not grant unread case eleven evidence');
+  await advance(p); await finale(p, true, decisions, 11);
+  assert.equal((await readSave(p)).trust, 6);
+  await p.getByRole('button', { name: 'MỞ CỬA TẦNG 13', exact: true }).click();
+  assert.equal(await p.locator('#overlay-card h2').innerText(), 'THE TRUTH');
+  assert.match(await p.locator('.ending-copy').innerText(), /Ông Bảy tra chiếc chìa khóa vào ổ cũ/);
+}));
+
+for (const admitted of [false, true]) {
+  test(`An's ${admitted ? 'admitted' : 'refused'} route stays consistent through the Truth rescue`, () => withPage(async p => {
+    await start(p); await toCase(p, 5, safe, true);
+    const decisions = safe.slice(); decisions[5] = admitted;
+    await decide(p, admitted, false);
+    const result = await p.locator('#overlay-card .lead').innerText();
+    assert.match(result, /An/);
+    assert.equal((await readSave(p)).evidence, 3, 'An does not hand over an unread registry record');
+    if (admitted) assert.match(result, /An bước vào cabin/);
+    else {
+      assert.match(result, /An.*chiếu nghỉ tầng 9/);
+      assert.doesNotMatch(result, /An (?:bước vào|vào thang máy|đứng cạnh|đứng bên)/);
+    }
+    await advance(p);
+    for (let i = 6; i <= 7; i++) {
+      await scan(p, evidence[i]);
+      await decide(p, decisions[i], i < 7);
+    }
+    await p.locator('#overlay-card .main-cta').click();
+    assert.match(await p.locator('#overlay-card').innerText(), admitted ? /An đang đợi trong chuyến cabin/ : /An vẫn chờ ở chiếu nghỉ tầng 9/);
+    await advance(p); await finale(p, true, decisions, 8);
+    assert.equal((await readSave(p)).trust, admitted ? 9 : 6);
+    await p.getByRole('button', { name: 'MỞ CỬA TẦNG 13', exact: true }).click();
+    assert.equal(await p.locator('#overlay-card h2').innerText(), 'THE TRUTH');
+    const copy = await p.locator('.ending-copy').innerText();
+    assert.match(copy, /An/);
+    assert.match(copy, /mẹ/);
+    assert.match(copy, admitted ? /Từ cabin, Bé An/ : /Từ chiếu nghỉ tầng 9, An/);
+    if (!admitted) assert.doesNotMatch(copy, /An (?:vẫn |đang )?(?:đứng cạnh|đứng bên|chờ cạnh) bạn/);
+  }));
+}
+
+for (const admitted of [false, true]) {
+  test(`Linh's ${admitted ? 'admitted' : 'refused'} memory remains consistent with the final rescue`, () => withPage(async p => {
+    await start(p); await toCase(p, 11, safe, true);
+    const decisions = safe.slice(); decisions[11] = admitted;
+    await decide(p, admitted, false);
+    const result = await p.locator('#overlay-card .lead').innerText();
+    assert.match(result, /(?:ký ức|nhớ mình)/);
+    assert.equal((await readSave(p)).evidence, 9, 'The last passenger does not award an unread camera record');
+    if (admitted) assert.match(result, /vết khói.*chính bạn/);
+    else {
+      assert.match(result, /khóa lối về bàn G/);
+      assert.match(result, /ký ức.*giữ riêng/);
+      assert.doesNotMatch(result, /(?:Linh|người kia|cô ấy) (?:bước vào|vào phòng|đứng cạnh|đứng bên)/);
+    }
+    await p.locator('#overlay-card .main-cta').click();
+    assert.equal((await readSave(p)).trust, admitted ? 9 : 6);
+    await p.getByRole('button', { name: 'MỞ CỬA TẦNG 13', exact: true }).click();
+    assert.equal(await p.locator('#overlay-card h2').innerText(), 'THE TRUTH');
+    const copy = await p.locator('.ending-copy').innerText();
+    assert.match(copy, /Linh/);
+    assert.match(copy, admitted ? /Phần ký ức đã trở về/ : /ký ức bị từ chối ở bàn G/);
+    if (!admitted) assert.doesNotMatch(copy, /(?:Linh|người kia|cô ấy) (?:đang |vẫn )?(?:đứng cạnh|đứng bên|đưa tay|trao|đưa cho)/);
+  }));
+}
+
+test('three distinct nights, repair timing and rescue power instructions agree through the finale', () => withPage(async p => {
+  await p.locator('#overlay-card .main-cta').click();
+  assert.match(await p.locator('#overlay-card').innerText(), /LINH/);
+  assert.match(await p.locator('#overlay-card').innerText(), /2013/);
+  await advance(p);
+  const clocks = [await p.locator('#clock').innerText()];
+  await toCase(p, 2); await scan(p, 'log');
+  const power = await p.locator('#inspection-report').innerText();
+  assert.match(power, /ngắt nguồn chính/);
+  assert.match(power, /giữ nguồn phụ/);
+  await decide(p, true); await decide(p, false, false);
+  await p.locator('#overlay-card .main-cta').click();
+  await p.locator('#overlay-card .main-cta').click();
+  const secondNight = await p.locator('#overlay-card').innerText();
+  assert.match(secondNight, /đêm mới|đêm thứ hai/i);
+  assert.match(secondNight, /đồng hồ.*01:13/);
+  await advance(p);
+  clocks.push(await p.locator('#clock').innerText());
+  await scan(p, 'registry');
+  const repair = await p.locator('#inspection-report').innerText();
+  const orderTime = repair.match(/lúc (\d{2}):(\d{2})/);
+  assert.ok(orderTime, 'Repair work order has an observable time');
+  const [hour, minute] = clocks[1].split(':').map(Number);
+  assert.ok(Number(orderTime[1]) * 60 + Number(orderTime[2]) < hour * 60 + minute, 'Repair order predates the current second-night clock');
+  for (let i = 4; i <= 7; i++) await decide(p, safe[i], i < 7);
+  await p.locator('#overlay-card .main-cta').click();
+  await p.locator('#overlay-card .main-cta').click();
+  const thirdNight = await p.locator('#overlay-card').innerText();
+  assert.match(thirdNight, /đêm thứ ba/i);
+  assert.match(thirdNight, /đồng hồ.*01:13/);
+  await advance(p);
+  clocks.push(await p.locator('#clock').innerText());
+  for (const clock of clocks) assert.match(clock, /^01:13:/, 'Each night returns to the 01:13 interval');
+  await decide(p, false); await decide(p, false); await scan(p, 'log');
+  const rescue = await p.locator('#inspection-report').innerText();
+  assert.match(rescue, /ngắt nguồn chính/);
+  assert.match(rescue, /giữ nguồn phụ/);
+  assert.match(rescue, /mở cửa thủ công/);
+  await decide(p, true); await decide(p, true, false);
+  await p.locator('#overlay-card .main-cta').click();
+  const finaleCopy = await p.locator('#overlay-card').innerText();
+  assert.match(finaleCopy, /nguồn phụ/);
+  assert.match(finaleCopy, /cần.*cứu hộ|cứu hộ.*cần/);
+  await p.getByRole('button', { name: 'CẮT NGUỒN ĐIỆN', exact: true }).click();
+  assert.equal(await p.locator('#overlay-card h2').innerText(), 'THE SILENCE');
+  const silence = await p.locator('.ending-copy').innerText();
+  assert.match(silence, /nguồn chính/);
+  assert.match(silence, /nguồn phụ/);
+}));
+
+test('four observed clues and one contained breach still unlock Truth without Bay key or unread rescue files', () => withPage(async p => {
+  await start(p);
+  const decisions = safe.slice(); decisions[3] = true; decisions[10] = false;
+  const sources = new Set([2, 4, 6, 9]);
+  for (let i = 0; i < 12; i++) {
+    if (sources.has(i)) await scan(p, evidence[i]);
+    await decide(p, decisions[i], i < 11);
+  }
+  const before = await readSave(p);
+  assert.deepEqual(before.found, [3, 5, 7, 10]);
+  assert.equal(before.evidence, 4);
+  assert.equal(before.breach, 1);
+  assert.equal(before.trust, 5);
+  assert.equal(before.correct, 10);
+  assert.equal(before.wrong, 2);
+  assert.equal(before.score, 960);
+  await p.locator('#overlay-card .main-cta').click();
+  const copy = await p.locator('#overlay-card').innerText();
+  assert.match(copy, /BẢY · AN · VÂN · LINH/);
+  assert.match(copy, /cần mở cửa cứu hộ/);
+  assert.deepEqual(await readSave(p), before, 'Mandatory finale reveals its own roster and lever without awarding unread evidence');
+  await p.getByRole('button', { name: 'MỞ CỬA TẦNG 13', exact: true }).click();
+  assert.equal(await p.locator('#overlay-card h2').innerText(), 'THE TRUTH');
+  const ending = await p.locator('.ending-copy').innerText();
+  assert.match(ending, /hủy lượt mượn tên đã lọt vào cabin/);
+  assert.match(ending, /dòng khắc dưới nắp bàn trực/);
+  assert.match(ending, /mở cửa thủ công/);
+  assert.doesNotMatch(ending, /Ông Bảy tra chiếc chìa khóa vào ổ cũ/);
+  assert.equal(await readSave(p), null);
+}));

@@ -14,7 +14,7 @@ let server, browser;
 
 before(async () => {
   server = http.createServer(async (req, res) => {
-    const files = { '/': 'index.html', '/index.html': 'index.html', '/game.js': 'game.js', '/styles.css': 'styles.css', '/assets/elevator-lobby.png': 'assets/elevator-lobby.png' };
+    const files = { '/': 'index.html', '/index.html': 'index.html', '/game.js': 'game.js', '/audio.js': 'audio.js', '/styles.css': 'styles.css', '/assets/elevator-lobby.png': 'assets/elevator-lobby.png' };
     const file = files[req.url];
     if (!file) { res.writeHead(404).end(); return; }
     try {
@@ -34,11 +34,47 @@ after(async () => {
 async function withPage(run, options = {}) {
   const context = await browser.newContext({ viewport: options.mobile ? { width: 390, height: 844 } : { width: 1440, height: 1000 }, reducedMotion: 'reduce' });
   try {
-    await context.addInitScript(({ seed, fault }) => {
+    await context.addInitScript(({ seed, fault, audio, audioFault }) => {
       for (const [key, value] of Object.entries(seed || {})) localStorage.setItem(key, JSON.stringify(value));
       if (fault === 'access') Object.defineProperty(window, 'localStorage', { get() { throw new DOMException('Storage disabled', 'SecurityError'); } });
       else if (fault) for (const method of fault === 'all' ? ['getItem', 'setItem', 'removeItem'] : [fault]) Storage.prototype[method] = function () { throw new DOMException('Storage disabled', 'SecurityError'); };
-    }, { seed: options.seed, fault: options.fault });
+      if (audio) {
+        const probe = window.__audioProbe = { contexts: [], resumeAttempts: 0, rejections: [] };
+        window.addEventListener('unhandledrejection', event => probe.rejections.push(String(event.reason)));
+        if (audioFault === 'unavailable') {
+          window.AudioContext = undefined;
+          window.webkitAudioContext = undefined;
+          return;
+        }
+        const NativeContext = window.AudioContext || window.webkitAudioContext;
+        if (!NativeContext) throw new Error('Native WebAudio is required for audio regression tests');
+        const connect = AudioNode.prototype.connect;
+        AudioNode.prototype.connect = function (destination, ...args) {
+          const result = connect.call(this, destination, ...args);
+          if (destination === this.context.destination) {
+            const record = probe.contexts.find(item => item.context === this.context);
+            if (record) connect.call(this, record.analyser);
+          }
+          return result;
+        };
+        class ObservedContext extends NativeContext {
+          constructor(...args) {
+            super(...args);
+            const analyser = this.createAnalyser();
+            analyser.fftSize = 2048;
+            analyser.smoothingTimeConstant = 0;
+            probe.contexts.push({ context: this, analyser });
+          }
+          resume() {
+            probe.resumeAttempts++;
+            if (audioFault === 'resume') return Promise.reject(new DOMException('Resume denied for regression test', 'NotAllowedError'));
+            return super.resume();
+          }
+        }
+        window.AudioContext = ObservedContext;
+        window.webkitAudioContext = ObservedContext;
+      }
+    }, { seed: options.seed, fault: options.fault, audio: options.audio, audioFault: options.audioFault });
     const page = await context.newPage();
     const errors = [];
     page.on('pageerror', err => errors.push(err.message));
@@ -46,6 +82,52 @@ async function withPage(run, options = {}) {
     await run(page);
     assert.deepEqual(errors, [], 'No uncaught browser errors');
   } finally { await context.close(); }
+}
+// Tap native PCM in parallel; the production graph still connects to its real destination.
+async function audioOutput(p, duration = 500, band = null) {
+  return p.evaluate(async ({ duration, band }) => {
+    const probe = window.__audioProbe;
+    const windows = [];
+    const until = performance.now() + duration;
+    do {
+      let sum = 0, samples = 0, peak = 0, bandPower = 0;
+      for (const { context, analyser } of probe.contexts) {
+        // A suspended context produces no output even if an analyser retains its last block.
+        if (context.state !== 'running') continue;
+        const pcm = new Float32Array(analyser.fftSize);
+        analyser.getFloatTimeDomainData(pcm);
+        for (const value of pcm) { sum += value * value; peak = Math.max(peak, Math.abs(value)); samples++; }
+        if (band) {
+          const spectrum = new Float32Array(analyser.frequencyBinCount);
+          analyser.getFloatFrequencyData(spectrum);
+          const binHz = context.sampleRate / analyser.fftSize;
+          for (let bin = Math.ceil(band[0] / binHz); bin <= Math.floor(band[1] / binHz); bin++) {
+            const magnitude = 10 ** (spectrum[bin] / 20);
+            bandPower += magnitude * magnitude;
+          }
+        }
+      }
+      windows.push({ rms: samples ? Math.sqrt(sum / samples) : 0, peak, bandRms: Math.sqrt(bandPower) });
+      await new Promise(resolve => setTimeout(resolve, 20));
+    } while (performance.now() < until);
+    return {
+      contexts: probe.contexts.length,
+      states: probe.contexts.map(item => item.context.state),
+      minRms: Math.min(...windows.map(item => item.rms)),
+      maxRms: Math.max(...windows.map(item => item.rms)),
+      maxBandRms: Math.max(...windows.map(item => item.bandRms)),
+      peak: Math.max(...windows.map(item => item.peak)),
+      windows: windows.length,
+      resumeAttempts: probe.resumeAttempts,
+      rejections: probe.rejections.slice()
+    };
+  }, { duration, band });
+}
+function assertAudible(output) {
+  assert.ok(output.states.includes('running'), `Native audio is running: ${JSON.stringify(output)}`);
+  assert.ok(output.minRms > 0.0001, `Sustained native PCM reaches the destination: ${JSON.stringify(output)}`);
+  assert.ok(output.peak > 0.0005, `Audio peak is measurable: ${JSON.stringify(output)}`);
+  assert.deepEqual(output.rejections, [], 'No unhandled audio promise rejections');
 }
 const visibleOverlay = p => p.locator('#overlay').evaluate(e => e.classList.contains('visible'));
 const readSave = p => p.evaluate(key => JSON.parse(localStorage.getItem(key)), SAVE);
@@ -505,3 +587,133 @@ test('four observed clues and one contained breach still unlock Truth without Ba
   assert.doesNotMatch(ending, /Ông Bảy tra chiếc chìa khóa vào ổ cũ/);
   assert.equal(await readSave(p), null);
 }));
+
+test('audio: start and continue gestures produce sustained native ambience after transition cues finish', t => withPage(async p => {
+  assert.equal((await audioOutput(p, 100)).peak, 0, 'Welcome screen does not autoplay');
+  await start(p);
+  await p.waitForTimeout(1600);
+  const started = await audioOutput(p, 1200);
+  assertAudible(started);
+  await decide(p, true);
+  await p.reload({ waitUntil: 'domcontentloaded' });
+  assert.equal((await audioOutput(p, 100)).peak, 0, 'Reload waits for a new user gesture');
+  await p.getByRole('button', { name: 'TIẾP TỤC CA TRỰC →', exact: true }).click();
+  await advance(p);
+  await p.waitForTimeout(1600);
+  const continued = await audioOutput(p, 800);
+  assertAudible(continued);
+  assert.equal((await readSave(p)).i, 1);
+  t.diagnostic(JSON.stringify({ started, continued }));
+}, { audio: true }));
+
+test('audio: mute is silent, saved off survives reload and modal unmute restores real output', t => withPage(async p => {
+  await start(p);
+  assert.equal(await p.locator('#sound-toggle').getAttribute('aria-pressed'), 'true');
+  await p.locator('#sound-toggle').click();
+  assert.equal(await p.locator('#sound-toggle').getAttribute('aria-pressed'), 'false');
+  assert.equal(await p.evaluate(() => localStorage.getItem('tle_floor13_sound')), 'off');
+  await p.waitForTimeout(400);
+  const muted = await audioOutput(p, 400);
+  assert.ok(muted.peak < 0.000001, `Mute stops output: ${JSON.stringify(muted)}`);
+  await p.reload({ waitUntil: 'domcontentloaded' });
+  assert.equal(await p.locator('#overlay-card [data-sound-toggle]').getAttribute('aria-pressed'), 'false');
+  await start(p);
+  const restoredMute = await audioOutput(p, 400);
+  assert.ok(restoredMute.peak < 0.000001, 'Continue respects persisted mute');
+  await decide(p, true, false);
+  await p.locator('#overlay-card [data-sound-toggle]').click();
+  assert.equal(await p.evaluate(() => localStorage.getItem('tle_floor13_sound')), 'on');
+  assert.deepEqual(await p.locator('[data-sound-toggle]').evaluateAll(buttons => buttons.map(button => button.getAttribute('aria-pressed'))), ['true', 'true']);
+  await p.waitForTimeout(1600);
+  const unmuted = await audioOutput(p, 800);
+  assertAudible(unmuted);
+  t.diagnostic(JSON.stringify({ muted, restoredMute, unmuted }));
+}, { audio: true }));
+
+test('audio: scan camera door bad night and ending cues produce real native output', t => withPage(async p => {
+  await start(p);
+  const measured = [];
+  async function cue(name, action) {
+    await p.waitForTimeout(1600);
+    // Measure cue frequencies separately from the random low-frequency fan and motor.
+    const bands = { scan: [700, 1400], camera: [500, 1500], door: [450, 900], bad: [140, 190], night: [250, 400], ending: [140, 190] };
+    const band = bands[name];
+    const ambient = await audioOutput(p, 300, band);
+    assertAudible(ambient);
+    const sampling = audioOutput(p, 700, band);
+    await action();
+    const played = await sampling;
+    if (name === 'ending') {
+      // Ending replaces ambience, so its standalone cue need not be louder than the fan.
+      assert.ok(played.maxRms > 0.005 && played.peak > 0.02, `Ending cue reaches the real destination: ${JSON.stringify(played)}`);
+    } else assert.ok(played.maxBandRms > ambient.maxBandRms * 1.5, `${name} cue is measurable in its native tone band: ${JSON.stringify({ band, ambient, played })}`);
+    measured.push({ name, ambient, played });
+  }
+  await cue('scan', () => scan(p, 'registry'));
+  await cue('camera', () => scan(p, 'camera'));
+  await cue('door', () => decide(p, true, false));
+  await advance(p);
+  await cue('bad', () => decide(p, false, false));
+  await advance(p); await decide(p, true); await decide(p, false, false);
+  await p.locator('#overlay-card .main-cta').click();
+  await cue('night', () => p.locator('#overlay-card .main-cta').click());
+  await advance(p); await finale(p, false, safe, 4);
+  await cue('ending', () => p.getByRole('button', { name: 'KHÓA TẦNG 13', exact: true }).click());
+  assert.equal(await p.locator('#overlay-card h2').innerText(), 'THE KEEPER');
+  t.diagnostic(JSON.stringify(measured));
+}, { audio: true }));
+
+test('audio: repeated complete playthroughs and replay keep only one live native context', t => withPage(async p => {
+  await start(p);
+  const samples = [];
+  for (let round = 0; round < 2; round++) {
+    await finale(p);
+    await p.getByRole('button', { name: 'KHÓA TẦNG 13', exact: true }).click();
+    if (round === 0) {
+      await p.waitForTimeout(2200);
+      const finished = await audioOutput(p, 200);
+      assert.ok(finished.peak < 0.000001, 'Ambience stops after the ending cue finishes');
+      await p.locator('#overlay-card [data-sound-toggle]').click();
+      await p.locator('#overlay-card [data-sound-toggle]').click();
+      await p.getByRole('button', { name: 'SAO CHÉP THÀNH TÍCH', exact: true }).click();
+      const afterToggle = await audioOutput(p, 200);
+      assert.ok(afterToggle.peak < 0.000001, 'Sound and share controls do not restart an already finished shift');
+      samples.push({ finished, afterToggle });
+    }
+    await p.getByRole('button', { name: 'CHƠI LẠI →', exact: true }).click();
+    await advance(p);
+    const output = await audioOutput(p, 150);
+    assert.equal(output.states.filter(state => state !== 'closed').length, 1, 'Replay does not leave duplicate native audio contexts alive');
+    assert.deepEqual(output.rejections, []);
+    samples.push(output);
+  }
+  await p.waitForTimeout(1600);
+  assertAudible(await audioOutput(p, 800));
+  t.diagnostic(JSON.stringify(samples));
+}, { audio: true }));
+
+test('audio: unavailable WebAudio still permits inspection decisions and modal sound controls', () => withPage(async p => {
+  await start(p); await scan(p, 'registry'); await decide(p, true, false);
+  await p.locator('#overlay-card [data-sound-toggle]').click();
+  await p.locator('#overlay-card [data-sound-toggle]').click();
+  assert.equal((await readSave(p)).i, 1);
+  assert.equal((await readSave(p)).correct, 1);
+  const output = await audioOutput(p, 100);
+  assert.equal(output.contexts, 0);
+  assert.deepEqual(output.rejections, []);
+  await advance(p);
+  assert.equal(await p.locator('#visitor-number').innerText(), '#002');
+}, { audio: true, audioFault: 'unavailable' }));
+
+test('audio: rejected native resume is handled without breaking the game or leaking promise rejections', t => withPage(async p => {
+  // An untrusted click exercises the browser's suspended-context path without an autoplay override.
+  await p.locator('#overlay-card .main-cta').dispatchEvent('click');
+  await advance(p); await scan(p, 'registry'); await decide(p, true, false);
+  await p.locator('#overlay-card [data-sound-toggle]').click();
+  await p.locator('#overlay-card [data-sound-toggle]').click();
+  const output = await audioOutput(p, 150);
+  assert.ok(output.resumeAttempts > 0, 'The rejected resume path was actually exercised');
+  assert.deepEqual(output.rejections, [], 'Rejected resume promises are handled');
+  assert.equal((await readSave(p)).correct, 1);
+  t.diagnostic(JSON.stringify(output));
+}, { audio: true, audioFault: 'resume' }));

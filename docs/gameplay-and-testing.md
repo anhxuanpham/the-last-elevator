@@ -10,6 +10,13 @@
 - Khóa tầng 13 mở The Keeper; cắt điện mở The Silence. Mở cửa cho The Truth khi evidence ≥ 4, trust ≥ 4 và breach ≤ 1; các trường hợp mở cửa khác cho The Replacement.
 - Finale luôn hiển thị danh sách cứu hộ và hướng dẫn cần mở cơ học, không cộng bằng chứng chưa đọc. The Truth kể Ông Bảy dùng chìa khóa nếu được cho vào ở case 11; nếu bị từ chối, người trực dùng cần dưới nắp bàn. Lời kể cũng phản ánh việc An và Linh từng được nhận hay bị từ chối, và xử lý lượt mượn tên nếu có một breach. Các nhánh này giữ nguyên điều kiện ending, điểm số, giới hạn xác minh và save.
 
+## Âm thanh
+
+- Game không tự phát tiếng trước tương tác. Bấm bắt đầu, tiếp tục hoặc chủ động bật âm để khởi động tiếng nền; reload chờ thao tác mới, kể cả trước đó đang bật tiếng.
+- Nút âm thanh có ở thanh trên và trong mọi modal. Lựa chọn tắt âm được lưu cùng cơ chế storage của game và giữ qua reload; bật lại trong ca trực khôi phục tiếng nền. Trình đọc màn hình nhận được nhãn bật/tắt và trạng thái hiện tại.
+- Âm nền tạm dừng khi trang bị ẩn/rời trang; khi quay lại ca đang chơi, game thử tiếp tục và có thể cần thao tác mới nếu browser chặn phát. Âm nền dừng ở ending, chỉ còn cue kết thúc. Chơi lại dùng lại audio context hiện có.
+- [audio.js](../dist/audio.js) sở hữu âm nền và hiệu ứng Web Audio sinh trực tiếp; các lời gọi theo gameplay nằm trong [game.js](../dist/game.js). Không cần tải âm thanh bên ngoài. Nếu browser không hỗ trợ Web Audio hoặc từ chối resume, gameplay vẫn dùng được.
+
 ## Lưu trữ
 
 Các khóa `localStorage` hiện có được giữ nguyên. Save hợp lệ từ bản cũ vẫn đọc được; do bản cũ chưa lưu lượt scan, lần tiếp tục đầu tiên của save cũ bắt đầu với hai lượt xác minh. Save mới lưu các nguồn đã mở trong trường `opened`.
@@ -46,3 +53,5 @@ BROWSER=webkit PLAYWRIGHT_MODULE=/tmp/tle-browser-tests/node_modules/playwright 
 `PLAYWRIGHT_MODULE` nhận đường dẫn package đã cài nếu không nằm trong module path mặc định. `GAME_ROOT` nhận thư mục chứa `index.html`, `game.js`, `styles.css` để kiểm tra một snapshot khác. Không chạy nhiều suite cùng lúc vì runner dùng cổng cố định 8080.
 
 Suite kiểm tra bốn ending, điểm/bằng chứng, chống thu thập trùng, scan/đọc lại nguồn qua reload, điều hướng tab không quyết định nhầm, hai nhánh chìa khóa của The Truth sau reload, modal/focus, SIGNAL, các nhánh lịch sử, storage lỗi, save cũ/save hỏng và viewport mobile. Các ca truyện còn kiểm tra nhánh từ chối Minh/Bảy/An/Linh, mốc ba đêm và nguồn điện, finale không tự cộng bằng chứng, Truth với một breach và bốn bằng chứng, cùng khả năng cuộn modal dài trên mobile. Storage lỗi được kiểm tra bằng cách làm các phương thức browser Storage ném `SecurityError`; không thay thế logic game.
+
+Các ca âm thanh đo PCM bằng `AudioContext`/`AnalyserNode` thật tại đầu ra của graph, kiểm tra âm nền liên tục, cue, mute/unmute, reload/tiếp tục, chơi lại không nhân context và fallback. Phép đo này xác nhận tín hiệu do browser tạo ra; không thay thế việc nghe thử qua loa/tai nghe hoặc xác nhận âm lượng phần cứng của người chơi.

@@ -7,7 +7,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "check": "node --check dist/game.js && node --check tests/gameplay-regression.cjs",
+    "check": "node --check dist/audio.js && node --check dist/game.js && node --check tests/gameplay-regression.cjs",
     "test": "node --test tests/gameplay-regression.cjs",
     "test:webkit": "BROWSER=webkit node --test tests/gameplay-regression.cjs",
     "dev": "wrangler dev --port 8787",

@@ -21,6 +21,7 @@ Có thể mở trực tiếp `dist/index.html`, nhưng nên dùng HTTP server n�
 dist/
   index.html                  UI và nội dung HTML
   styles.css                  Theme, bố cục, responsive, hiệu ứng
+  audio.js                    Âm nền và hiệu ứng Web Audio sinh trực tiếp
   game.js                     Toàn bộ logic game và nội dung cốt truyện
   assets/elevator-lobby.png   Ảnh nền sảnh thang máy
 ```
@@ -36,6 +37,7 @@ dist/
 - Giữ lượt xác minh và kết quả vừa đọc khi tải lại trang; SIGNAL phản ánh đường truyền theo đêm, không phải đáp án an toàn.
 - Game vẫn chơi được trong phiên hiện tại khi trình duyệt chặn lưu trữ; dữ liệu lưu lỗi được bỏ qua an toàn.
 - Hỗ trợ bàn phím và giao diện responsive cho desktop/mobile.
+- Âm nền quạt/động cơ sảnh và hiệu ứng xác minh, cửa, cảnh báo, chuyển đêm, kết thúc; bật/tắt được ở thanh trên và trong modal, giữ lựa chọn qua reload.
 - Hình nhân vật được tạo bằng SVG trực tiếp trong `game.js`; ảnh nền riêng trong `assets/`.
 
 ## Tùy chỉnh
@@ -43,10 +45,13 @@ dist/
 - **Nội dung nhân vật, lời thoại, 12 tình huống, các kết thúc:** sửa các hằng `people`, `cases`, `scenes`, `endings` trong `dist/game.js`.
 - **Nội dung phụ thuộc quyết định trước đó:** xem `caseQuote()`, `caseNote()`, `clueText()`, `nightBody()`, `nightSummaryText()` và `endingText()` trong `dist/game.js`.
 - **UI và phối màu:** sửa `dist/styles.css`.
+- **Âm nền và hiệu ứng:** sửa [dist/audio.js](dist/audio.js); các điểm phát âm theo gameplay nằm trong `dist/game.js`. Âm được sinh bằng Web Audio, không cần tải file âm thanh hay dịch vụ ngoài.
 - **Ảnh nền:** thay `dist/assets/elevator-lobby.png`, hoặc sửa đường dẫn ở `.elevator-stage` trong CSS.
 - **Nhân vật:** sửa hàm `portrait(...)` trong `dist/game.js` để thay SVG tạm bằng asset nhân vật riêng.
 
 Xem [hướng dẫn cốt truyện và continuity — có spoiler toàn bộ truyện](docs/story-guide.md) trước khi sửa nội dung.
+
+Âm thanh bắt đầu sau khi bấm bắt đầu/tiếp tục hoặc chủ động bật tiếng. Nếu đã tắt âm, dùng nút **BẬT ÂM THANH** trong modal; sau reload cần một thao tác mới để phát. Xem [quy tắc âm thanh và kiểm tra](docs/gameplay-and-testing.md#âm-thanh).
 
 ## Deploy
 

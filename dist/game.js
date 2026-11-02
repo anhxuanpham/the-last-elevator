@@ -122,7 +122,8 @@
       try{window.localStorage.setItem(key,'null');pendingStorage.delete(key)}catch(err){pendingStorage.add(key)}
     }
   }
-  var state=null,tab='registry',muted=readStorage(SOUND_KEY)==='off',audioContext=null,toastTimer=null;
+  var state=null,tab='registry',muted=readStorage(SOUND_KEY)==='off',audio=window.ElevatorAudio,endingShown=false,toastTimer=null;
+  audio.setMuted(muted);
   var overlay=$('#overlay'),overlayCard=$('#overlay-card');
   var fresh=function(){return {i:0,score:0,trust:2,breach:0,evidence:0,correct:0,wrong:0,history:[],found:[],opened:[],started:Date.now(),endings:[]}};
   function nonnegativeInteger(n){return Number.isSafeInteger(n)&&n>=0}
@@ -157,9 +158,27 @@
     overlay.classList.add('visible');setBackgroundInert(true);overlay.focus({preventScroll:true});
   }
   function hideOverlay(){overlay.classList.remove('visible');setBackgroundInert(false);$('#visitor-name').focus({preventScroll:true})}
-  function button(label,handler,secondary){var b=document.createElement('button');b.className=secondary?'secondary-cta':'main-cta';b.textContent=label;b.addEventListener('click',handler);return b}
-  function addButtons(items){var wrap=document.createElement('div');wrap.className='cta-row';items.forEach(function(item){wrap.appendChild(button(item[0],item[1],item[2]))});overlayCard.appendChild(wrap);wrap.querySelector('button').focus({preventScroll:true})}
-  function sound(type){if(muted)return;try{audioContext=audioContext||new (window.AudioContext||window.webkitAudioContext)();if(audioContext.state==='suspended')audioContext.resume();var o=audioContext.createOscillator(),g=audioContext.createGain(),now=audioContext.currentTime;o.connect(g);g.connect(audioContext.destination);o.type=type==='bad'?'sawtooth':'sine';o.frequency.setValueAtTime(type==='bad'?132:type==='scan'?760:type==='door'?220:450,now);o.frequency.exponentialRampToValueAtTime(type==='bad'?54:type==='door'?150:320,now+.2);g.gain.setValueAtTime(.045,now);g.gain.exponentialRampToValueAtTime(.0001,now+.29);o.start();o.stop(now+.3)}catch(e){}}
+  function button(label,handler,secondary){var b=document.createElement('button');b.className=secondary?'secondary-cta':'main-cta';b.textContent=label;b.addEventListener('click',function(){activateAudio();handler()});return b}
+  function addButtons(items){
+    var wrap=document.createElement('div');wrap.className='cta-row';
+    items.forEach(function(item){wrap.appendChild(button(item[0],item[1],item[2]))});
+    var toggle=button('',toggleSound,true);toggle.dataset.soundToggle='';wrap.appendChild(toggle);
+    overlayCard.appendChild(wrap);updateSoundControls();wrap.querySelector('button').focus({preventScroll:true});
+  }
+  function activateAudio(){if(!muted&&!endingShown)audio.start()}
+  function sound(type){if(!muted)audio.play(type)}
+  function updateSoundControls(){
+    $$('[data-sound-toggle]').forEach(function(control){
+      var label=muted?'Bật âm thanh':'Tắt âm thanh';
+      control.textContent=control.id==='sound-toggle'?(muted?'♪̸':'♫'):label.toUpperCase();
+      control.title=label;control.setAttribute('aria-label',label);control.setAttribute('aria-pressed',muted?'false':'true');
+    });
+  }
+  function toggleSound(){
+    muted=!muted;writeStorage(SOUND_KEY,muted?'off':'on');audio.setMuted(muted);
+    if(!muted&&!endingShown){activateAudio();sound('scan')}
+    updateSoundControls();toast(muted?'Âm thanh đã tắt':audio.supported?'Âm thanh đã bật':'Trình duyệt không hỗ trợ âm thanh');
+  }
   function toast(msg){var el=$('#toast');el.textContent=msg;el.classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.classList.remove('visible')},2400)}
   function showIntro(){
     $('#game-shell').hidden=true;$('#game-footer').hidden=true;
@@ -167,9 +186,10 @@
     uiOverlay('<div class="intro-kicker">VESPER TOWER · INCIDENT FILE 013</div><h1 class="hero-title">THE LAST<br><span>ELEVATOR.</span></h1><p class="lead">01:13 sáng. Tòa nhà chỉ có 12 tầng. Một người vừa bấm số 13.<br>Thẻ trên ngực ghi LINH. Sổ trực cũng có tên bạn, lặp lại từ năm 2013. Ba đêm tới, bạn phải xác minh từng người trước cửa — rồi tìm xem ai đã xóa tên những người chưa từng trở về.</p><div class="quote">KIỂM TRA. SUY LUẬN. QUYẾT ĐỊNH.<br>Đừng để một cái tên đúng che mất một hành trình sai.</div><div class="intro-stats"><div><span>CA TRỰC</span><strong>03 NIGHTS</strong></div><div><span>HÀNH KHÁCH</span><strong>12 CASES</strong></div><div><span>ĐIỂM CAO NHẤT</span><strong>'+String(b.score).padStart(4,'0')+'</strong></div></div><p class="lead" style="font-size:12px">Khuyến nghị bật âm thanh, nhưng game có thể chơi hoàn toàn không cần tiếng.</p>');
     addButtons(hasSave?[['TIẾP TỤC CA TRỰC →',function(){state=load();startCase()},false],['CA MỚI',startNew,true]]:[['BẮT ĐẦU CA TRỰC →',startNew,false]]);
   }
-  function startNew(){state=fresh();save();showNightIntro(1)}
+  function startNew(){endingShown=false;state=fresh();save();showNightIntro(1)}
   function showNightIntro(n){
     var s=scenes[n-1];
+    audio.setNight(n);sound('night');
     uiOverlay('<span class="scene-label">VESPER TOWER / NIGHT 0'+n+' · '+s.subtitle+'</span><h2>'+s.name+'</h2><p class="lead">'+escapeHTML(nightBody(n))+'</p><div class="quote">'+s.line+'</div><div class="instruction-list"><div class="instruction-item"><b>QUY TẮC 01.</b> Tối đa 2 nguồn xác minh khác nhau; có thể đọc lại nguồn đã mở.</div><div class="instruction-item"><b>QUY TẮC 02.</b> Đối chiếu hồ sơ với hành trình và yêu cầu thực tế. Từ chối nhầm làm giảm độ tin cậy.</div><div class="instruction-item"><b>QUY TẮC 03.</b> Không phải người đã chết nào cũng nguy hiểm. Đừng cấp tên mới hoặc xóa log theo lời hành khách.</div></div>');
     addButtons([['BẮT ĐẦU NIGHT 0'+n+' →',startCase,false]]);
   }
@@ -179,7 +199,7 @@
     if(state.i>=cases.length)return showFinale();
     tab='registry';
     $('#game-shell').hidden=false;$('#game-footer').hidden=false;
-    render();hideOverlay();save();
+    audio.setNight(nightOf(state.i));activateAudio();render();hideOverlay();save();
   }
   function render(){
     var item=cases[state.i],person=people[item.person];
@@ -285,7 +305,7 @@
       save();renderClue(kind);return;
     }
     if(state.opened.length>=2)return;
-    state.opened.push(kind);sound('scan');
+    state.opened.push(kind);sound(kind==='camera'?'camera':'scan');
     if(item.evidenceKey===inspectionSources[kind].key&&!state.found.includes(item.id)){state.found.push(item.id);state.evidence++;state.score+=25}
     save();renderClue(kind);updateInspectionControls();
     $('#evidence-status').textContent='EVIDENCE '+String(state.evidence).padStart(2,'0');
@@ -337,6 +357,8 @@
   }
   function showEnding(key){
     var e=endings[key];recordBest(key);
+    endingShown=true;
+    audio.finish(key);
     removeStorage(SAVE_KEY);
     var rank=state.correct>=10?'S':state.correct>=8?'A':state.correct>=6?'B':'C';
     uiOverlay('<span class="scene-label">ENDING UNLOCKED / '+(key==='truth'?'SECRET':'STANDARD')+'</span><h2 class="ending-title">'+e.title+'</h2><p class="lead">'+e.subtitle+'</p><p class="ending-copy">'+escapeHTML(endingText(key))+'</p><div class="quote">'+e.tone+'</div><div class="result-grid"><div class="result-item"><strong>'+rank+'</strong><small>RANK</small></div><div class="result-item"><strong>'+state.correct+'/12</strong><small>ĐÚNG</small></div><div class="result-item"><strong>'+state.score+'</strong><small>ĐIỂM</small></div></div><p class="lead" style="font-size:12px">Đã mở khóa '+best().endings.length+'/4 kết thúc. Chơi lại để tìm sự thật khác.</p>');
@@ -365,7 +387,7 @@
   $$('.inspection-button').forEach(function(b){b.addEventListener('click',function(){inspect(b.dataset.inspect)})});
   $('#admit-btn').addEventListener('click',function(){decide('admit')});
   $('#deny-btn').addEventListener('click',function(){decide('deny')});
-  $('#sound-toggle').addEventListener('click',function(){muted=!muted;writeStorage(SOUND_KEY,muted?'off':'on');this.textContent=muted?'♪̸':'♫';toast(muted?'Âm thanh đã tắt':'Âm thanh đã bật')});
+  $('#sound-toggle').addEventListener('click',toggleSound);
   document.addEventListener('keydown',function(ev){
     if(overlay.classList.contains('visible')){
       if(ev.key==='Tab'){
@@ -389,6 +411,6 @@
     if(ev.key==='ArrowRight'){ev.preventDefault();decide('admit')}
     if(['1','2','3'].includes(ev.key)){inspect({1:'registry',2:'camera',3:'log'}[ev.key])}
   });
-  $('#sound-toggle').textContent=muted?'♪̸':'♫';
+  updateSoundControls();
   showIntro();
 })();

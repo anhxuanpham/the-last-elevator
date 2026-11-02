@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./styles.css" />
+  <script src="./audio.js" defer></script>
   <script src="./game.js" defer></script>
 </head>
 <body>
@@ -18,7 +19,7 @@
     <header class="topbar">
       <div class="brand-lockup"><div class="brand-mark">13<span>↑</span></div><div><strong>VESPER TOWER</strong><small>SECURITY CONTROL · EST. 1986</small></div></div>
       <div class="top-status"><span class="signal-dot"></span><span id="top-status-label">SECURE CHANNEL</span><span class="top-separator"></span><span id="clock">01:13:00</span></div>
-      <button id="sound-toggle" class="icon-button" type="button" title="Bật/tắt âm thanh" aria-label="Bật/tắt âm thanh">♫</button>
+      <button id="sound-toggle" data-sound-toggle class="icon-button" type="button" title="Tắt âm thanh" aria-label="Tắt âm thanh" aria-pressed="true">♫</button>
     </header>
 
     <main class="main-layout" id="game-shell" hidden>

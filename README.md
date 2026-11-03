@@ -25,7 +25,7 @@ dist/
   game.js                     Toàn bộ logic game và nội dung cốt truyện
   p2game-platform.js           Kết nối SDK và vòng đời P2Game
   p2game.json                  Manifest P2Game
-  assets/elevator-lobby.png   Ảnh nền sảnh thang máy
+  assets/elevator-lobby.webp   Ảnh nền sảnh thang máy
   assets/elevator-theme.mp3   Nhạc nền gốc của dự án
 ```
 
@@ -49,7 +49,7 @@ dist/
 - **Nội dung phụ thuộc quyết định trước đó:** xem `caseQuote()`, `caseNote()`, `clueText()`, `nightBody()`, `nightSummaryText()`, `choiceEcho()` và `endingText()` trong `dist/game.js`.
 - **UI và phối màu:** sửa `dist/styles.css`.
 - **Nhạc nền và hiệu ứng:** sửa [dist/audio.js](dist/audio.js); các điểm phát âm theo gameplay nằm trong `dist/game.js`. Nhạc MP3 được tải từ asset của game, tiếng nền/hiệu ứng sinh bằng Web Audio; không dùng dịch vụ nhạc ngoài. Script [generate-soundtrack.py](scripts/generate-soundtrack.py) tạo bản nhạc gốc; xem [cách tạo lại asset](docs/gameplay-and-testing.md#tạo-lại-nhạc-nền).
-- **Ảnh nền:** thay `dist/assets/elevator-lobby.png`, hoặc sửa đường dẫn ở `.elevator-stage` trong CSS.
+- **Ảnh nền:** thay `dist/assets/elevator-lobby.webp`, hoặc sửa đường dẫn ở `.elevator-stage` trong CSS.
 - **Nhân vật:** sửa hàm `portrait(...)` trong `dist/game.js` để thay SVG tạm bằng asset nhân vật riêng.
 
 Xem [hướng dẫn cốt truyện và continuity — có spoiler toàn bộ truyện](docs/story-guide.md) trước khi sửa nội dung.

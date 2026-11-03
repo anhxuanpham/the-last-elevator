@@ -27,7 +27,7 @@ npm run p2game:package
 
 Archive mặc định nằm trong `plans/releases/`, có `index.html` và `p2game.json` ở gốc. [Script đóng gói](../scripts/package-p2game.py) chỉ lấy `dist/`, không chứa source test, node_modules, cấu hình máy hoặc báo cáo local. Có thể truyền đường dẫn đầu ra cho script nếu cần.
 
-`p2game:check` là kiểm tra của dự án dựa trên tài liệu công khai, không phải bộ kiểm tra chính thức. Tại thời điểm tích hợp, package `p2game-validate` trong hướng dẫn trả npm404; trang rules/mẫu manifest cũng báo API chưa sẵn sàng. Khi công cụ chính thức hoạt động, chạy đúng lệnh từ tài liệu nền tảng. Bước upload vẫn phải kiểm tra slug đã đăng ký, version đã xuất bản, schema/CSP thực tế và kiểm duyệt nội dung.
+`p2game:check` là kiểm tra bổ sung của dự án, không thay thế validator chính thức. Trước khi tải lên, chạy `npx --yes p2game-validate ./dist --slug the-last-elevator` theo tài liệu nền tảng. Các trường `controls` là mô tả dạng chuỗi; nút sao chép thành tích cần quyền `clipboard-write`. Bước upload vẫn phải kiểm tra slug đã đăng ký, version đã xuất bản và kiểm duyệt nội dung.
 
 Manifest đang dùng `the-last-elevator` theo repo. Khi tạo game trong Developer Portal, dùng đúng slug đó hoặc cập nhật `id` trước khi đóng gói. Hồ sơ studio cần được duyệt để tạo/xuất bản game. Không tự tạo hồ sơ hoặc nộp game bằng dữ liệu phỏng đoán. Mỗi lần cập nhật game đã xuất bản, tăng version trong manifest theo yêu cầu nền tảng.
 

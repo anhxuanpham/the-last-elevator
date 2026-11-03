@@ -25,11 +25,14 @@ assert.equal(manifest.engine, 'dom');
 assert.equal(manifest.category, 'puzzle');
 assert.equal(manifest.ageRating, 'T');
 assert.deepEqual(manifest.languages, ['vi']);
-assert.ok(['keyboard', 'mouse', 'touch'].every(control => manifest.controls[control]));
+for (const control of ['keyboard', 'mouse', 'touch']) {
+  assert.equal(typeof manifest.controls[control], 'string', 'Control instructions must be strings: ' + control);
+  assert.ok(manifest.controls[control].trim().length > 0);
+}
 assert.equal(manifest.sdk.version, '1.1');
 assert.equal(manifest.sdk.requiresAuth, false);
 assert.equal(manifest.sdk.cloudSave, false);
-assert.ok(manifest.permissions.includes('audio') && manifest.permissions.includes('persistent-storage'));
+assert.ok(['audio', 'persistent-storage', 'clipboard-write'].every(permission => manifest.permissions.includes(permission)));
 assert.ok(!manifest.permissions.includes('external-network'));
 assert.deepEqual(manifest.leaderboards, [{ id: 'high-score', name: 'Điểm ca trực', order: 'DESC', maxScore: 1450, minSessionSeconds: 30 }]);
 assert.equal(manifest.attestation.ownsRights, true);
